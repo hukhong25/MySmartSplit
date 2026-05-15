@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -32,6 +35,8 @@ public class GroupsActivity extends AppCompatActivity {
     private List<Group> groupList;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private SearchView searchViewGroups;
+    private TextView tvEmptyGroups;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,8 @@ public class GroupsActivity extends AppCompatActivity {
         }
 
         rvGroups = findViewById(R.id.rvGroups);
+        tvEmptyGroups = findViewById(R.id.tvEmptyGroups);
+        searchViewGroups = findViewById(R.id.searchViewGroups);
         rvGroups.setLayoutManager(new LinearLayoutManager(this));
 
         groupList = new ArrayList<>();
@@ -59,13 +66,25 @@ public class GroupsActivity extends AppCompatActivity {
         });
         rvGroups.setAdapter(adapter);
 
+        // Kết nối SearchView với bộ lọc adapter
+        searchViewGroups.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                updateEmptyState(newText);
+                return true;
+            }
+        });
+
         // Load data from Firestore
         loadGroups();
 
-        FloatingActionButton fabAddGroup = findViewById(R.id.fabAddGroup);
-        fabAddGroup.setOnClickListener(v -> {
-            showAddOptionsDialog();
-        });
     }
 
     private void loadGroups() {
@@ -83,65 +102,31 @@ public class GroupsActivity extends AppCompatActivity {
                             groupList.add(group);
                         }
                     }
-                    adapter.notifyDataSetChanged();
+                    // Cập nhật danh sách gốc trong adapter sau mỗi lần Firestore reload
+                    adapter.updateFullList(groupList);
+
+                    // Áp dụng lại bộ lọc hiện tại nếu người dùng đang tìm kiếm
+                    String currentQuery = searchViewGroups.getQuery().toString();
+                    adapter.getFilter().filter(currentQuery);
+                    updateEmptyState(currentQuery);
                 });
     }
 
-    private void showAddOptionsDialog() {
-        String[] options = {"Tạo nhóm mới", "Tham gia bằng mã"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Tùy chọn nhóm");
-        builder.setItems(options, (dialog, which) -> {
-            if (which == 0) {
-                startActivity(new Intent(GroupsActivity.this, CreateGroupActivity.class));
+    /** Hiện/ẩn thông báo "Không tìm thấy nhóm nào" */
+    private void updateEmptyState(String query) {
+        // Dùng post để chờ adapter cập nhật xong
+        rvGroups.post(() -> {
+            if (adapter.getItemCount() == 0) {
+                tvEmptyGroups.setVisibility(View.VISIBLE);
+                rvGroups.setVisibility(View.GONE);
             } else {
-                showJoinGroupDialog();
+                tvEmptyGroups.setVisibility(View.GONE);
+                rvGroups.setVisibility(View.VISIBLE);
             }
         });
-        builder.show();
     }
 
-    private void showJoinGroupDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Nhập mã tham gia");
 
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        input.setHint("Ví dụ: ABC123");
-        builder.setView(input);
-
-        builder.setPositiveButton("Tham gia", (dialog, which) -> {
-            String code = input.getText().toString().trim().toUpperCase();
-            if (!code.isEmpty()) {
-                joinGroupWithCode(code);
-            }
-        });
-        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());
-
-        builder.show();
-    }
-
-    private void joinGroupWithCode(String code) {
-        String currentUserId = mAuth.getCurrentUser().getUid();
-        db.collection("groups")
-                .whereEqualTo("joinCode", code)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        String groupId = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        db.collection("groups").document(groupId)
-                                .update("memberIds", FieldValue.arrayUnion(currentUserId))
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Đã tham gia nhóm thành công!", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(this, "Lỗi khi tham gia: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-                    } else {
-                        Toast.makeText(this, "Mã tham gia không hợp lệ", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

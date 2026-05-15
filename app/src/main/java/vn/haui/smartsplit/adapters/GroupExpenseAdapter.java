@@ -1,5 +1,6 @@
 package vn.haui.smartsplit.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +20,17 @@ import vn.haui.smartsplit.models.Expense;
 public class GroupExpenseAdapter extends RecyclerView.Adapter<GroupExpenseAdapter.ExpenseViewHolder> {
 
     private final List<Expense> expenseList;
+    private final OnExpenseClickListener listener;
     private static final SimpleDateFormat DATE_FORMAT =
             new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
-    public GroupExpenseAdapter(List<Expense> expenseList) {
+    public interface OnExpenseClickListener {
+        void onExpenseClick(Expense expense);
+    }
+
+    public GroupExpenseAdapter(List<Expense> expenseList, OnExpenseClickListener listener) {
         this.expenseList = expenseList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -41,11 +48,32 @@ public class GroupExpenseAdapter extends RecyclerView.Adapter<GroupExpenseAdapte
         holder.tvDescription.setText(expense.getDescription());
         holder.tvAmount.setText(String.format(Locale.getDefault(), "%,.0f VND", expense.getAmount()));
 
-        // Hiển thị người trả và thời gian
         String payerName = expense.getPayerName();
         if (payerName == null || payerName.isEmpty()) payerName = "Không rõ";
         String dateStr = DATE_FORMAT.format(new Date(expense.getTimestamp()));
-        holder.tvNote.setText("Trả bởi: " + payerName + "  •  " + dateStr);
+        
+        String statusSuffix = "";
+        if (expense.isSettlement()) {
+            if (Expense.STATUS_PENDING.equals(expense.getStatus())) {
+                statusSuffix = " (Chờ xác nhận)";
+                holder.tvAmount.setTextColor(Color.parseColor("#FFA500")); // Orange
+            } else if (Expense.STATUS_REJECTED.equals(expense.getStatus())) {
+                statusSuffix = " (Bị từ chối)";
+                holder.tvAmount.setTextColor(Color.RED);
+            } else {
+                holder.tvAmount.setTextColor(Color.parseColor("#2E7D32")); // Green
+            }
+        } else {
+            holder.tvAmount.setTextColor(Color.parseColor("#E91E63")); // Standard expense color
+        }
+
+        holder.tvNote.setText("Trả bởi: " + payerName + "  •  " + dateStr + statusSuffix);
+        
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onExpenseClick(expense);
+            }
+        });
     }
 
     @Override

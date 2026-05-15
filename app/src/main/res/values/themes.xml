@@ -2,7 +2,11 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.SmartSplit" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorSecondary">@color/colorAccent</item>
+
+        <item name="android:windowBackground">@color/backgroundColor</item>
     </style>
 
     <style name="Theme.SmartSplit" parent="Base.Theme.SmartSplit" />

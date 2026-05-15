@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -34,6 +36,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
     private FloatingActionButton fabAddGroupExpense;
     private String groupId, groupName;
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private ListenerRegistration expenseListener;
 
     @Override
@@ -42,6 +45,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group_details);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         groupId = getIntent().getStringExtra("GROUP_ID");
         groupName = getIntent().getStringExtra("GROUP_NAME");
 
@@ -61,7 +65,6 @@ public class GroupDetailsActivity extends AppCompatActivity {
         fetchGroupDetails();
         showExpenses();
 
-        // FAB mặc định: thêm chi tiêu
         fabAddGroupExpense.setOnClickListener(v -> openAddExpense());
 
         tabLayoutGroup.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -106,7 +109,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
         removeExpenseListener();
 
         List<Expense> expenses = new ArrayList<>();
-        GroupExpenseAdapter adapter = new GroupExpenseAdapter(expenses);
+        GroupExpenseAdapter adapter = new GroupExpenseAdapter(expenses, this::handleExpenseClick);
         rvGroupContent.setAdapter(adapter);
 
         expenseListener = db.collection("expenses")
@@ -126,6 +129,27 @@ public class GroupDetailsActivity extends AppCompatActivity {
                     }
                     adapter.notifyDataSetChanged();
                 });
+    }
+
+    private void handleExpenseClick(Expense expense) {
+        if (expense.isSettlement() && Expense.STATUS_PENDING.equals(expense.getStatus())) {
+            // Check if the current user is the receiver (toUser)
+            String currentUid = mAuth.getUid();
+            Map<String, Double> splitDetails = expense.getSplitDetails();
+            if (splitDetails != null && splitDetails.containsKey(currentUid)) {
+                // Open confirmation dialog/activity
+                Intent intent = new Intent(this, SettleDetailActivity.class);
+                intent.putExtra("EXPENSE_ID", expense.getId());
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Chờ người nhận xác nhận thanh toán", Toast.LENGTH_SHORT).show();
+            }
+        } else if (expense.getProofImageUrl() != null) {
+            // Just view the proof
+            Intent intent = new Intent(this, SettleDetailActivity.class);
+            intent.putExtra("EXPENSE_ID", expense.getId());
+            startActivity(intent);
+        }
     }
 
     private void showBalances() {
@@ -180,14 +204,17 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Expense expense = doc.toObject(Expense.class);
+                        
+                        // Only count COMPLETED expenses for balances
+                        if (expense.getStatus() != null && !Expense.STATUS_COMPLETED.equals(expense.getStatus())) {
+                            continue;
+                        }
 
-                        // Người trả được cộng toàn bộ số tiền
                         String payerId = expense.getPayerId();
                         if (balances.containsKey(payerId)) {
                             balances.put(payerId, balances.get(payerId) + expense.getAmount());
                         }
 
-                        // Mỗi người trong splitDetails bị trừ phần họ nợ
                         Map<String, Double> splitDetails = expense.getSplitDetails();
                         if (splitDetails != null) {
                             for (Map.Entry<String, Double> entry : splitDetails.entrySet()) {

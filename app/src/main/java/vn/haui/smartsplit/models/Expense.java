@@ -3,6 +3,10 @@ package vn.haui.smartsplit.models;
 import java.util.Map;
 
 public class Expense {
+    public static final String STATUS_COMPLETED = "COMPLETED";
+    public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_REJECTED = "REJECTED";
+
     private String id;
     private String description;
     private double amount;
@@ -11,6 +15,9 @@ public class Expense {
     private String groupId;
     private long timestamp;
     private Map<String, Double> splitDetails;
+    private String proofImageUrl;
+    private String status; // PENDING, COMPLETED, REJECTED
+    private boolean isSettlement;
 
     public Expense() {}
 
@@ -23,6 +30,8 @@ public class Expense {
         this.groupId = groupId;
         this.timestamp = timestamp;
         this.splitDetails = splitDetails;
+        this.status = STATUS_COMPLETED; // Default for normal expenses
+        this.isSettlement = false;
     }
 
     public String getId() { return id; }
@@ -41,4 +50,10 @@ public class Expense {
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
     public Map<String, Double> getSplitDetails() { return splitDetails; }
     public void setSplitDetails(Map<String, Double> splitDetails) { this.splitDetails = splitDetails; }
+    public String getProofImageUrl() { return proofImageUrl; }
+    public void setProofImageUrl(String proofImageUrl) { this.proofImageUrl = proofImageUrl; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public boolean isSettlement() { return isSettlement; }
+    public void setSettlement(boolean settlement) { isSettlement = settlement; }
 }
