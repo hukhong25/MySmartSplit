@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "266248962323",
+    "project_id": "smartsplit-b2bb8",
+    "storage_bucket": "smartsplit-b2bb8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266248962323:android:a6fcc8d558b1745e231ae6",
+        "android_client_info": {
+          "package_name": "vn.haui.smartsplit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYP3ss7FJlIX6C4dpVPCmw2pxUU0Q9fJc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

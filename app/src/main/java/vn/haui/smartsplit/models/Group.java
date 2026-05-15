@@ -7,14 +7,16 @@ public class Group {
     private String name;
     private List<String> memberIds; // List of User UIDs
     private String adminId;
+    private String joinCode; // Unique code to join the group
 
     public Group() {}
 
-    public Group(String id, String name, List<String> memberIds, String adminId) {
+    public Group(String id, String name, List<String> memberIds, String adminId, String joinCode) {
         this.id = id;
         this.name = name;
         this.memberIds = memberIds;
         this.adminId = adminId;
+        this.joinCode = joinCode;
     }
 
     public String getId() { return id; }
@@ -25,4 +27,6 @@ public class Group {
     public void setMemberIds(List<String> memberIds) { this.memberIds = memberIds; }
     public String getAdminId() { return adminId; }
     public void setAdminId(String adminId) { this.adminId = adminId; }
+    public String getJoinCode() { return joinCode; }
+    public void setJoinCode(String joinCode) { this.joinCode = joinCode; }
 }

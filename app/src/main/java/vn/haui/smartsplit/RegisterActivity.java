@@ -9,16 +9,29 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText etName, etEmail, etPassword, etConfirmPassword;
     private Button btnRegister;
     private TextView tvLogin;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
@@ -35,15 +48,66 @@ public class RegisterActivity extends AppCompatActivity {
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-            } else if (!password.equals(confirmPassword)) {
-                Toast.makeText(this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
-            } else {
-                // Sau này tích hợp Firebase Auth tại đây
-                Toast.makeText(this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                finish();
+                return;
             }
+
+            if (!password.equals(confirmPassword)) {
+                Toast.makeText(this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password.length() < 6) {
+                Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            registerUser(name, email, password);
         });
 
         tvLogin.setOnClickListener(v -> finish());
+    }
+
+    private void registerUser(String name, String email, String password) {
+        btnRegister.setEnabled(false);
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            // Cập nhật Display Name
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(name)
+                                    .build();
+
+                            user.updateProfile(profileUpdates);
+
+                            // Lưu thông tin user vào Firestore
+                            saveUserToFirestore(user.getUid(), name, email);
+                        }
+                    } else {
+                        btnRegister.setEnabled(true);
+                        Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void saveUserToFirestore(String userId, String name, String email) {
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("uid", userId);
+        userMap.put("name", name);
+        userMap.put("email", email);
+
+        db.collection("users").document(userId)
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(RegisterActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(RegisterActivity.this, DashboardActivity.class));
+                    finishAffinity();
+                })
+                .addOnFailureListener(e -> {
+                    btnRegister.setEnabled(true);
+                    Toast.makeText(RegisterActivity.this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 }
