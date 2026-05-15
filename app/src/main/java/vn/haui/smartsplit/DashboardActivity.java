@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,7 +27,7 @@ public class DashboardActivity extends AppCompatActivity {
     private List<Group> groupList;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private TextView tvTotalBalance, tvSeeAllGroups, tvWelcome;
+    private TextView tvTotalOwe, tvTotalOwed, tvSeeAllGroups, tvWelcome;
     private Button btnMainLogout;
 
     @Override
@@ -43,7 +42,8 @@ public class DashboardActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         tvWelcome = findViewById(R.id.tvWelcome);
-        tvTotalBalance = findViewById(R.id.tvTotalBalance);
+        tvTotalOwe = findViewById(R.id.tvTotalOwe);
+        tvTotalOwed = findViewById(R.id.tvTotalOwed);
         tvSeeAllGroups = findViewById(R.id.tvSeeAllGroups);
         btnMainLogout = findViewById(R.id.btnMainLogout);
         rvDashboardGroups = findViewById(R.id.rvDashboardGroups);
@@ -68,13 +68,8 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(new Intent(DashboardActivity.this, GroupsActivity.class));
         });
 
-        // Xử lý nút Đăng xuất to
+        // Xử lý nút Đăng xuất
         btnMainLogout.setOnClickListener(v -> logoutUser());
-
-        FloatingActionButton fabAdd = findViewById(R.id.fabAdd);
-        fabAdd.setOnClickListener(v -> {
-            startActivity(new Intent(DashboardActivity.this, AddTransactionActivity.class));
-        });
 
         loadDashboardData();
     }
@@ -99,6 +94,8 @@ public class DashboardActivity extends AppCompatActivity {
                     }
                     groupAdapter.notifyDataSetChanged();
                 });
+        
+        // TODO: Logic tính toán tổng nợ và tổng được trả sẽ được cập nhật sau dựa trên database
     }
 
     @Override

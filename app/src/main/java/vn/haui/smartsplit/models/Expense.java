@@ -7,13 +7,15 @@ public class Expense {
     private String description;
     private double amount;
     private String payerId;
+    private String payerName;
     private String groupId;
     private long timestamp;
-    private Map<String, Double> splitDetails; // Map of UserID to Amount they owe
+    private Map<String, Double> splitDetails;
 
     public Expense() {}
 
-    public Expense(String id, String description, double amount, String payerId, String groupId, long timestamp, Map<String, Double> splitDetails) {
+    public Expense(String id, String description, double amount, String payerId, String groupId,
+                   long timestamp, Map<String, Double> splitDetails) {
         this.id = id;
         this.description = description;
         this.amount = amount;
@@ -31,6 +33,8 @@ public class Expense {
     public void setAmount(double amount) { this.amount = amount; }
     public String getPayerId() { return payerId; }
     public void setPayerId(String payerId) { this.payerId = payerId; }
+    public String getPayerName() { return payerName; }
+    public void setPayerName(String payerName) { this.payerName = payerName; }
     public String getGroupId() { return groupId; }
     public void setGroupId(String groupId) { this.groupId = groupId; }
     public long getTimestamp() { return timestamp; }
