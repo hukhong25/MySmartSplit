@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Green stays vibrant in dark mode -->
+    <color name="colorPrimary">#1CC29F</color>
+    <color name="colorPrimaryDark">#0D7A62</color>
+    <color name="colorPrimaryLight">#1E3D35</color>
+    <color name="colorPrimaryVariant">#0A5C48</color>
+
+    <!-- Secondary / Accent -->
+    <color name="colorAccent">#26D4AC</color>
+    <color name="colorAccentLight">#1A3530</color>
+
+    <!-- Status Colors -->
+    <color name="colorOwe">#EF5350</color>
+    <color name="colorOweLight">#3D1515</color>
+    <color name="colorOwed">#26D4AC</color>
+    <color name="colorOwedLight">#1A3530</color>
+    <color name="colorSettled">#757575</color>
+    <color name="colorSettledLight">#2C2C2C</color>
+
+    <!-- Backgrounds -->
+    <color name="backgroundColor">#0F1612</color>
+    <color name="surfaceColor">#1A2420</color>
+    <color name="surfaceVariant">#232E2A</color>
+
+    <!-- Text -->
+    <color name="textPrimary">#E8F0ED</color>
+    <color name="textSecondary">#8FA89E</color>
+    <color name="textHint">#5C7269</color>
+    <color name="textOnPrimary">#FFFFFF</color>
+
+    <!-- Card & Divider -->
+    <color name="cardBackground">#1A2420</color>
+    <color name="dividerColor">#2A3A35</color>
+    <color name="strokeColor">#2E4039</color>
+
+    <!-- Balance Card Gradient (slightly adjusted for dark) -->
+    <color name="gradientStart">#159A7F</color>
+    <color name="gradientEnd">#0D7A62</color>
+    <color name="gradientMid">#12886E</color>
+
+    <!-- Bottom Nav -->
+    <color name="navSelected">#1CC29F</color>
+    <color name="navUnselected">#5C7269</color>
+    <color name="navBackground">#1A2420</color>
+
+    <!-- Category Colors (same hue, dark mode fine) -->
+    <color name="catFood">#1CC29F</color>
+    <color name="catTravel">#60A5FA</color>
+    <color name="catShopping">#A78BFA</color>
+    <color name="catEntertainment">#FCD34D</color>
+    <color name="catOther">#6B7280</color>
+</resources>

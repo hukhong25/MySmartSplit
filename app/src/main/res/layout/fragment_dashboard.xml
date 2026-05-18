@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- ── Header ── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xin chào 👋"
+                    android:textSize="13sp"
+                    android:textColor="@color/textSecondary"/>
+
+                <TextView
+                    android:id="@+id/tvWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Người dùng"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/textPrimary"/>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/ivNotification"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_dialog_info"
+                android:padding="8dp"
+                app:tint="@color/textSecondary"
+                android:background="@drawable/bg_card_surface"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <!-- ── Balance Card ── -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_balance_card"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tổng quan số dư"
+                    android:textSize="13sp"
+                    android:textColor="#B2FFFFFF"
+                    android:layout_marginBottom="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false">
+
+                    <!-- Bạn nợ -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Bạn nợ"
+                            android:textSize="12sp"
+                            android:textColor="#CCFFFFFF"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalOwe"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 VNĐ"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFCDD2"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="48dp"
+                        android:background="#40FFFFFF"
+                        android:layout_marginHorizontal="16dp"/>
+
+                    <!-- Bạn được nợ -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Được nợ"
+                            android:textSize="12sp"
+                            android:textColor="#CCFFFFFF"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalOwed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 VNĐ"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#C8E6C9"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ── Nhóm của bạn ── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Nhóm của bạn"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"/>
+
+            <TextView
+                android:id="@+id/tvSeeAllGroups"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xem tất cả"
+                android:textSize="13sp"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"
+                android:padding="4dp"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvDashboardGroups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:clipToPadding="false"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- ── Quick Actions ── -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thao tác nhanh"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:paddingHorizontal="20dp"
+            android:layout_marginBottom="12dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:layout_marginBottom="32dp">
+
+            <!-- Create Group -->
+            <LinearLayout
+                android:id="@+id/btnQuickCreateGroup"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp"
+                android:background="@drawable/bg_card_surface"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:text="+"
+                    android:textSize="24sp"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_icon_group"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tạo nhóm"
+                    android:textSize="13sp"
+                    android:textColor="@color/textPrimary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tạo nhóm mới"
+                    android:textSize="11sp"
+                    android:textColor="@color/textSecondary"/>
+            </LinearLayout>
+
+            <!-- Join Group -->
+            <LinearLayout
+                android:id="@+id/btnQuickJoinGroup"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp"
+                android:background="@drawable/bg_card_surface"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:text="→"
+                    android:textSize="22sp"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_icon_group"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tham gia"
+                    android:textSize="13sp"
+                    android:textColor="@color/textPrimary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bằng mã nhóm"
+                    android:textSize="11sp"
+                    android:textColor="@color/textSecondary"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
