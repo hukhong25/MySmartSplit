@@ -2,7 +2,7 @@ package vn.haui.smartsplit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import com.google.android.material.button.MaterialButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,8 +19,8 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText etName, etEmail, etPassword, etConfirmPassword;
-    private Button btnRegister;
+    private EditText etDisplayName, etEmail, etPassword, etConfirmPassword;
+    private MaterialButton btnRegister;
     private TextView tvLogin;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -33,7 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        etName = findViewById(R.id.etName);
+        etDisplayName = findViewById(R.id.etDisplayName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
@@ -41,7 +41,7 @@ public class RegisterActivity extends AppCompatActivity {
         tvLogin = findViewById(R.id.tvLogin);
 
         btnRegister.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
+            String name = etDisplayName.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
             String confirmPassword = etConfirmPassword.getText().toString().trim();
@@ -102,7 +102,7 @@ public class RegisterActivity extends AppCompatActivity {
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(RegisterActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(RegisterActivity.this, DashboardActivity.class));
+                    startActivity(new Intent(RegisterActivity.this, HomeContainerActivity.class));
                     finishAffinity();
                 })
                 .addOnFailureListener(e -> {

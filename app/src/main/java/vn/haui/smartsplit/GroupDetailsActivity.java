@@ -2,9 +2,11 @@ package vn.haui.smartsplit;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,12 +31,13 @@ import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
 
-public class GroupDetailsActivity extends AppCompatActivity {
+public class GroupDetailsActivity extends AppCompatActivity implements BalanceAdapter.OnActionClickListener {
 
     private RecyclerView rvGroupContent;
     private TabLayout tabLayoutGroup;
     private FloatingActionButton fabAddGroupExpense;
     private String groupId, groupName;
+    private String joinCode;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private ListenerRegistration expenseListener;
@@ -72,9 +75,11 @@ public class GroupDetailsActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0) {
                     showExpenses();
+                    fabAddGroupExpense.setImageResource(android.R.drawable.ic_input_add);
                     fabAddGroupExpense.setOnClickListener(v -> openAddExpense());
                 } else {
                     showBalances();
+                    fabAddGroupExpense.setImageResource(android.R.drawable.ic_menu_send); // Icon for Settle Up
                     fabAddGroupExpense.setOnClickListener(v -> openSettleUp());
                 }
             }
@@ -83,14 +88,44 @@ public class GroupDetailsActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.group_details_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else if (item.getItemId() == R.id.action_invite) {
+            shareInviteCode();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void shareInviteCode() {
+        if (joinCode == null) {
+            Toast.makeText(this, "Đang tải mã mời...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String message = "Tham gia nhóm '" + groupName + "' trên SmartSplit bằng mã: " + joinCode;
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        startActivity(Intent.createChooser(intent, "Mời thành viên qua"));
+    }
+
     private void openAddExpense() {
-        Intent intent = new Intent(GroupDetailsActivity.this, AddGroupExpenseActivity.class);
+        Intent intent = new Intent(this, AddGroupExpenseActivity.class);
         intent.putExtra("GROUP_ID", groupId);
         startActivity(intent);
     }
 
     private void openSettleUp() {
-        Intent intent = new Intent(GroupDetailsActivity.this, SettleUpActivity.class);
+        Intent intent = new Intent(this, SettleUpActivity.class);
         intent.putExtra("GROUP_ID", groupId);
         startActivity(intent);
     }
@@ -99,15 +134,17 @@ public class GroupDetailsActivity extends AppCompatActivity {
         db.collection("groups").document(groupId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Group group = documentSnapshot.toObject(Group.class);
-                    if (group != null && getSupportActionBar() != null) {
-                        getSupportActionBar().setSubtitle("Mã: " + group.getJoinCode());
+                    if (group != null) {
+                        joinCode = group.getJoinCode();
+                        if (getSupportActionBar() != null) {
+                            getSupportActionBar().setSubtitle("Mã: " + joinCode);
+                        }
                     }
                 });
     }
 
     private void showExpenses() {
         removeExpenseListener();
-
         List<Expense> expenses = new ArrayList<>();
         GroupExpenseAdapter adapter = new GroupExpenseAdapter(expenses, this::handleExpenseClick);
         rvGroupContent.setAdapter(adapter);
@@ -115,15 +152,11 @@ public class GroupDetailsActivity extends AppCompatActivity {
         expenseListener = db.collection("expenses")
                 .whereEqualTo("groupId", groupId)
                 .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "Lỗi tải chi tiêu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+                    if (error != null) return;
                     expenses.clear();
                     if (value != null) {
                         for (QueryDocumentSnapshot doc : value) {
-                            Expense expense = doc.toObject(Expense.class);
-                            expenses.add(expense);
+                            expenses.add(doc.toObject(Expense.class));
                         }
                         expenses.sort((a, b) -> Long.compare(b.getTimestamp(), a.getTimestamp()));
                     }
@@ -132,124 +165,80 @@ public class GroupDetailsActivity extends AppCompatActivity {
     }
 
     private void handleExpenseClick(Expense expense) {
-        if (expense.isSettlement() && Expense.STATUS_PENDING.equals(expense.getStatus())) {
-            // Check if the current user is the receiver (toUser)
-            String currentUid = mAuth.getUid();
-            Map<String, Double> splitDetails = expense.getSplitDetails();
-            if (splitDetails != null && splitDetails.containsKey(currentUid)) {
-                // Open confirmation dialog/activity
-                Intent intent = new Intent(this, SettleDetailActivity.class);
-                intent.putExtra("EXPENSE_ID", expense.getId());
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "Chờ người nhận xác nhận thanh toán", Toast.LENGTH_SHORT).show();
-            }
-        } else if (expense.getProofImageUrl() != null) {
-            // Just view the proof
-            Intent intent = new Intent(this, SettleDetailActivity.class);
-            intent.putExtra("EXPENSE_ID", expense.getId());
-            startActivity(intent);
-        }
+        Intent intent = new Intent(this, SettleDetailActivity.class);
+        intent.putExtra("EXPENSE_ID", expense.getId());
+        startActivity(intent);
     }
 
     private void showBalances() {
         removeExpenseListener();
-
         db.collection("groups").document(groupId).get()
                 .addOnSuccessListener(groupDoc -> {
                     List<String> memberIds = (List<String>) groupDoc.get("memberIds");
-                    if (memberIds == null || memberIds.isEmpty()) {
-                        rvGroupContent.setAdapter(new BalanceAdapter(new ArrayList<>(), new HashMap<>()));
-                        return;
-                    }
+                    if (memberIds == null) return;
 
                     List<User> members = new ArrayList<>();
                     AtomicInteger fetchCount = new AtomicInteger(0);
-                    int total = memberIds.size();
-
                     for (String uid : memberIds) {
-                        db.collection("users").document(uid).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    String name = userDoc.getString("name");
-                                    String email = userDoc.getString("email");
-                                    if (name == null || name.isEmpty()) {
-                                        name = (email != null) ? email : uid;
-                                    }
-                                    members.add(new User(userDoc.getId(), name, email));
-
-                                    if (fetchCount.incrementAndGet() == total) {
-                                        computeAndShowBalances(members);
-                                    }
-                                })
-                                .addOnFailureListener(e -> {
-                                    if (fetchCount.incrementAndGet() == total) {
-                                        computeAndShowBalances(members);
-                                    }
-                                });
+                        db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
+                            members.add(userDoc.toObject(User.class));
+                            if (fetchCount.incrementAndGet() == memberIds.size()) {
+                                computeAndShowBalances(members);
+                            }
+                        });
                     }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi tải nhóm: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                });
     }
 
     private void computeAndShowBalances(List<User> members) {
-        db.collection("expenses")
-                .whereEqualTo("groupId", groupId)
-                .get()
+        db.collection("expenses").whereEqualTo("groupId", groupId).get()
                 .addOnSuccessListener(querySnapshot -> {
                     Map<String, Double> balances = new HashMap<>();
-                    for (User u : members) {
-                        balances.put(u.getUid(), 0.0);
-                    }
+                    for (User u : members) balances.put(u.getUid(), 0.0);
 
                     for (QueryDocumentSnapshot doc : querySnapshot) {
-                        Expense expense = doc.toObject(Expense.class);
-                        
-                        // Only count COMPLETED expenses for balances
-                        if (expense.getStatus() != null && !Expense.STATUS_COMPLETED.equals(expense.getStatus())) {
-                            continue;
-                        }
+                        Expense exp = doc.toObject(Expense.class);
+                        if (!Expense.STATUS_COMPLETED.equals(exp.getStatus())) continue;
 
-                        String payerId = expense.getPayerId();
-                        if (balances.containsKey(payerId)) {
-                            balances.put(payerId, balances.get(payerId) + expense.getAmount());
-                        }
+                        String payer = exp.getPayerId();
+                        if (balances.containsKey(payer)) 
+                            balances.put(payer, balances.get(payer) + exp.getAmount());
 
-                        Map<String, Double> splitDetails = expense.getSplitDetails();
-                        if (splitDetails != null) {
-                            for (Map.Entry<String, Double> entry : splitDetails.entrySet()) {
-                                String uid = entry.getKey();
-                                Double owed = entry.getValue();
-                                if (balances.containsKey(uid)) {
-                                    balances.put(uid, balances.get(uid) - owed);
-                                }
+                        Map<String, Double> split = exp.getSplitDetails();
+                        if (split != null) {
+                            for (Map.Entry<String, Double> entry : split.entrySet()) {
+                                if (balances.containsKey(entry.getKey()))
+                                    balances.put(entry.getKey(), balances.get(entry.getKey()) - entry.getValue());
                             }
                         }
                     }
-
                     BalanceAdapter adapter = new BalanceAdapter(members, balances);
+                    adapter.setActionListener(this);
                     rvGroupContent.setAdapter(adapter);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi tính số dư: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                });
+    }
+
+    @Override
+    public void onSettleUp(User user, double balance) {
+        Intent intent = new Intent(this, SettleUpActivity.class);
+        intent.putExtra("GROUP_ID", groupId);
+        intent.putExtra("TARGET_USER_ID", user.getUid());
+        intent.putExtra("AMOUNT", balance);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRemind(User user, double balance) {
+        Toast.makeText(this, "Đã gửi lời nhắc đến " + user.getName(), Toast.LENGTH_SHORT).show();
     }
 
     private void removeExpenseListener() {
-        if (expenseListener != null) {
-            expenseListener.remove();
-            expenseListener = null;
-        }
+        if (expenseListener != null) { expenseListener.remove(); expenseListener = null; }
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        removeExpenseListener();
-    }
+    protected void onDestroy() { super.onDestroy(); removeExpenseListener(); }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
 }

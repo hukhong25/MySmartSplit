@@ -4,65 +4,89 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:layout_marginVertical="5dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/cardBackground"
+    app:strokeColor="@color/dividerColor"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="14dp"
         android:gravity="center_vertical">
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="#F0F0F0">
-            <ImageView
-                android:id="@+id/ivCategoryIcon"
+        <!-- Category icon -->
+        <FrameLayout
+            android:layout_width="42dp"
+            android:layout_height="42dp">
+            <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@android:drawable/ic_menu_agenda"
-                android:padding="8dp"
-                app:tint="@color/colorPrimary" />
-        </androidx.cardview.widget.CardView>
+                android:background="@drawable/bg_icon_group"/>
+            <ImageView
+                android:id="@+id/ivTransactionIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_menu_manage"
+                app:tint="@color/colorPrimary"/>
+        </FrameLayout>
 
+        <!-- Description + Date -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:layout_marginStart="12dp">
 
             <TextView
-                android:id="@+id/tvCategoryName"
+                android:id="@+id/tvTransactionDesc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tên phân loại"
-                android:textSize="15sp"
-                android:textColor="#333333"
-                android:textStyle="bold" />
+                android:text="Mô tả giao dịch"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"/>
 
             <TextView
-                android:id="@+id/tvNote"
+                android:id="@+id/tvTransactionPayer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ghi chú giao dịch"
-                android:textSize="13sp"
-                android:textColor="#888888" />
+                android:text="Trả bởi: Bạn"
+                android:textSize="12sp"
+                android:textColor="@color/textSecondary"
+                android:layout_marginTop="2dp"/>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvAmount"
+        <!-- Amount -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="- 50.000 VNĐ"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorOwe" />
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/tvTransactionAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₫500,000"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorOwed"/>
+
+            <TextView
+                android:id="@+id/tvTransactionShare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phần của bạn: ₫125k"
+                android:textSize="11sp"
+                android:textColor="@color/textSecondary"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

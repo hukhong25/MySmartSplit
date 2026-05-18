@@ -86,9 +86,9 @@ public class GroupExpenseAdapter extends RecyclerView.Adapter<GroupExpenseAdapte
 
         public ExpenseViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvDescription = itemView.findViewById(R.id.tvCategoryName);
-            tvAmount = itemView.findViewById(R.id.tvAmount);
-            tvNote = itemView.findViewById(R.id.tvNote);
+            tvDescription = itemView.findViewById(R.id.tvTransactionDesc);
+            tvAmount = itemView.findViewById(R.id.tvTransactionAmount);
+            tvNote = itemView.findViewById(R.id.tvTransactionPayer);
         }
     }
 }

@@ -1,13 +1,179 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║        Base SmartSplit Theme             ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
     <style name="Base.Theme.SmartSplit" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+        <!-- Primary Brand Color -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
-        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorOnPrimary">@color/textOnPrimary</item>
 
+        <!-- Secondary -->
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorOnSecondary">@color/textOnPrimary</item>
+
+        <!-- Backgrounds -->
         <item name="android:windowBackground">@color/backgroundColor</item>
+        <item name="android:colorBackground">@color/backgroundColor</item>
+        <item name="colorSurface">@color/surfaceColor</item>
+        <item name="colorOnSurface">@color/textPrimary</item>
+        <item name="colorSurfaceVariant">@color/surfaceVariant</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/backgroundColor</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Ripple -->
+        <item name="colorControlHighlight">#1A1CC29F</item>
+
+        <!-- Typography -->
+        <item name="android:fontFamily">sans-serif</item>
     </style>
 
     <style name="Theme.SmartSplit" parent="Base.Theme.SmartSplit" />
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║         Splash / No ActionBar            ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <style name="Theme.SmartSplit.Splash" parent="Theme.SmartSplit">
+        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║         Text Appearance Styles           ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <style name="TextAppearance.SmartSplit.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.SmartSplit.Subtitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/textSecondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextAppearance.SmartSplit.Amount" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.SmartSplit.AmountOwed" parent="TextAppearance.SmartSplit.Amount">
+        <item name="android:textColor">@color/colorOwed</item>
+    </style>
+
+    <style name="TextAppearance.SmartSplit.AmountOwe" parent="TextAppearance.SmartSplit.Amount">
+        <item name="android:textColor">@color/colorOwe</item>
+    </style>
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║         Component Styles                 ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+
+    <!-- Primary Button -->
+    <style name="Widget.SmartSplit.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:backgroundTint">@color/colorPrimary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:minHeight">52dp</item>
+    </style>
+
+    <!-- Secondary / Outline Button -->
+    <style name="Widget.SmartSplit.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:minHeight">44dp</item>
+    </style>
+
+    <!-- Text Button -->
+    <style name="Widget.SmartSplit.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Settle Up Button (filled green) -->
+    <style name="Widget.SmartSplit.Button.SettleUp" parent="Widget.Material3.Button">
+        <item name="android:backgroundTint">@color/colorPrimary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:minHeight">36dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <!-- Remind Button (outline) -->
+    <style name="Widget.SmartSplit.Button.Remind" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/strokeColor</item>
+        <item name="android:textColor">@color/textSecondary</item>
+        <item name="android:textSize">13sp</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:minHeight">36dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <!-- Card Style -->
+    <style name="Widget.SmartSplit.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/cardBackground</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/dividerColor</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- TextInputLayout -->
+    <style name="Widget.SmartSplit.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+    </style>
+
+    <!-- Bottom Navigation -->
+    <style name="Widget.SmartSplit.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/nav_item_color</item>
+        <item name="itemTextColor">@color/nav_item_color</item>
+        <item name="itemRippleColor">#1A1CC29F</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.SmartSplit.BottomNav.ActiveIndicator</item>
+    </style>
+
+    <style name="Widget.SmartSplit.BottomNav.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">#1A1CC29F</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.SmartSplit.BottomNav.Indicator</item>
+    </style>
+
+    <style name="ShapeAppearance.SmartSplit.BottomNav.Indicator" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Toolbar -->
+    <style name="Widget.SmartSplit.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/backgroundColor</item>
+        <item name="titleTextColor">@color/textPrimary</item>
+        <item name="subtitleTextColor">@color/textSecondary</item>
+    </style>
+
+    <!-- Chip styles for filter -->
+    <style name="Widget.SmartSplit.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="android:textColor">@color/chip_text_color</item>
+        <item name="chipStrokeColor">@color/strokeColor</item>
+        <item name="chipBackgroundColor">@color/chip_background_color</item>
+        <item name="chipCornerRadius">20dp</item>
+    </style>
+
 </resources>

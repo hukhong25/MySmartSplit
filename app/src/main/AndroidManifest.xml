@@ -12,23 +12,33 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartSplit">
 
+        <!-- Splash / Entry point -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.SmartSplit.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Auth -->
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterActivity" />
+
+        <!-- Main container with BottomNav -->
+        <activity android:name=".HomeContainerActivity" />
+
+        <!-- Original activities (still accessible for deep-links / back-compat) -->
         <activity android:name=".DashboardActivity" />
-        <activity android:name=".AddTransactionActivity" />
         <activity android:name=".GroupsActivity" />
+
+        <!-- Group flows -->
         <activity android:name=".CreateGroupActivity" />
         <activity android:name=".GroupDetailsActivity" />
         <activity android:name=".AddGroupExpenseActivity" />
+        <activity android:name=".AddTransactionActivity" />
         <activity android:name=".SettleUpActivity" />
         <activity android:name=".SettleDetailActivity" />
 

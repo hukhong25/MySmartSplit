@@ -2,7 +2,7 @@ package vn.haui.smartsplit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import com.google.android.material.button.MaterialButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,7 +14,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
-    private Button btnLogin;
+    private MaterialButton btnLogin;
     private TextView tvRegister;
     private FirebaseAuth mAuth;
 
@@ -52,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                        startActivity(new Intent(LoginActivity.this, HomeContainerActivity.class));
                         finish();
                     } else {
                         btnLogin.setEnabled(true);

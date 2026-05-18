@@ -1,10 +1,12 @@
 package vn.haui.smartsplit.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,11 +18,22 @@ import java.util.List;
 import vn.haui.smartsplit.R;
 import vn.haui.smartsplit.models.Group;
 
-public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder> implements Filterable {
+public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder>
+        implements Filterable {
 
-    private List<Group> groupList;         // danh sách hiện tại (đã lọc)
-    private List<Group> groupListFull;     // danh sách gốc đầy đủ
-    private OnGroupClickListener listener;
+    private List<Group> groupList;
+    private List<Group> groupListFull;
+    private final OnGroupClickListener listener;
+
+    // Background colors for group icon (cycle through)
+    private static final int[] ICON_COLORS = {
+            Color.parseColor("#1CC29F"),
+            Color.parseColor("#3B82F6"),
+            Color.parseColor("#8B5CF6"),
+            Color.parseColor("#F59E0B"),
+            Color.parseColor("#EF4444"),
+            Color.parseColor("#EC4899")
+    };
 
     public interface OnGroupClickListener {
         void onGroupClick(Group group);
@@ -32,9 +45,6 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         this.listener = listener;
     }
 
-    /**
-     * Gọi sau khi dữ liệu từ Firestore được nạp lại để đồng bộ danh sách gốc.
-     */
     public void updateFullList(List<Group> newList) {
         groupListFull = new ArrayList<>(newList);
     }
@@ -42,15 +52,33 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
     @NonNull
     @Override
     public GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_group, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_group, parent, false);
         return new GroupViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
         Group group = groupList.get(position);
+
         holder.tvGroupName.setText(group.getName());
-        holder.tvMemberCount.setText(group.getMemberIds().size() + " thành viên");
+        int memberCount = group.getMemberIds() != null ? group.getMemberIds().size() : 0;
+        holder.tvMemberCount.setText(memberCount + " thành viên");
+
+        // Default balance display (no per-user balance in Group model currently)
+        holder.tvGroupBalance.setText("₫0");
+        holder.tvGroupStatus.setText("Đã tất toán");
+        holder.tvGroupStatus.setTextColor(Color.parseColor("#9E9E9E"));
+        if (holder.viewStatusDot != null) {
+            holder.viewStatusDot.setBackgroundColor(Color.parseColor("#9E9E9E"));
+        }
+
+        // Rotate icon background color
+        int colorIdx = position % ICON_COLORS.length;
+        if (holder.ivGroupIcon != null) {
+            holder.ivGroupIcon.setColorFilter(ICON_COLORS[colorIdx]);
+        }
+
         holder.itemView.setOnClickListener(v -> listener.onGroupClick(group));
     }
 
@@ -68,19 +96,17 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             List<Group> filteredList = new ArrayList<>();
-
             if (constraint == null || constraint.length() == 0) {
                 filteredList.addAll(groupListFull);
             } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
+                String pattern = constraint.toString().toLowerCase().trim();
                 for (Group group : groupListFull) {
                     if (group.getName() != null &&
-                            group.getName().toLowerCase().contains(filterPattern)) {
+                            group.getName().toLowerCase().contains(pattern)) {
                         filteredList.add(group);
                     }
                 }
             }
-
             FilterResults results = new FilterResults();
             results.values = filteredList;
             return results;
@@ -96,12 +122,18 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
     };
 
     static class GroupViewHolder extends RecyclerView.ViewHolder {
-        TextView tvGroupName, tvMemberCount;
+        TextView tvGroupName, tvMemberCount, tvGroupBalance, tvGroupStatus;
+        ImageView ivGroupIcon;
+        View viewStatusDot;
 
         public GroupViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvGroupName = itemView.findViewById(R.id.tvGroupName);
-            tvMemberCount = itemView.findViewById(R.id.tvMemberCount);
+            tvGroupName    = itemView.findViewById(R.id.tvGroupName);
+            tvMemberCount  = itemView.findViewById(R.id.tvMemberCount);
+            tvGroupBalance = itemView.findViewById(R.id.tvGroupBalance);
+            tvGroupStatus  = itemView.findViewById(R.id.tvGroupStatus);
+            ivGroupIcon    = itemView.findViewById(R.id.ivGroupIcon);
+            viewStatusDot  = itemView.findViewById(R.id.viewStatusDot);
         }
     }
 }

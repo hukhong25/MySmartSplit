@@ -1,4 +1,70 @@
 <resources>
     <string name="app_name">SmartSplit</string>
-    <string name="add_transaction">Thêm giao dịch</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_dashboard">Tổng quan</string>
+    <string name="nav_groups">Nhóm</string>
+    <string name="nav_stats">Thống kê</string>
+    <string name="nav_profile">Hồ sơ</string>
+
+    <!-- Dashboard -->
+    <string name="you_owe">Bạn nợ</string>
+    <string name="you_are_owed">Bạn được nợ</string>
+    <string name="your_groups">Nhóm của bạn</string>
+    <string name="see_all">Xem tất cả</string>
+    <string name="no_groups">Bạn chưa có nhóm nào</string>
+    <string name="recent_activity">Hoạt động gần đây</string>
+
+    <!-- Groups -->
+    <string name="search_groups">Tìm kiếm nhóm…</string>
+    <string name="create_group">Tạo nhóm</string>
+    <string name="join_group">Tham gia nhóm</string>
+    <string name="join_with_code">Tham gia bằng mã</string>
+    <string name="no_groups_found">Không tìm thấy nhóm nào</string>
+    <string name="members">thành viên</string>
+    <string name="you_owe_label">Bạn nợ</string>
+    <string name="you_are_owed_label">Bạn được nợ</string>
+    <string name="settled">Đã tất toán</string>
+
+    <!-- Stats -->
+    <string name="spending_stats">Thống kê chi tiêu</string>
+    <string name="spending_overview">Tổng quan chi tiêu của bạn</string>
+    <string name="this_week">Tuần này</string>
+    <string name="this_month">Tháng này</string>
+    <string name="this_year">Năm nay</string>
+    <string name="total_spending">Tổng chi tiêu</string>
+    <string name="monthly_spending">Chi tiêu hàng tháng</string>
+    <string name="last_month">Tháng trước</string>
+    <string name="this_month_label">Tháng này</string>
+    <string name="cat_food">Ăn uống</string>
+    <string name="cat_travel">Di chuyển</string>
+    <string name="cat_shopping">Mua sắm</string>
+    <string name="cat_entertainment">Giải trí</string>
+    <string name="cat_other">Khác</string>
+
+    <!-- Profile -->
+    <string name="profile">Hồ sơ</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="change_password">Đổi mật khẩu</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="logout_confirm">Bạn có chắc muốn đăng xuất?</string>
+    <string name="app_version">Phiên bản</string>
+    <string name="settings">Cài đặt</string>
+    <string name="account">Tài khoản</string>
+    <string name="member_since">Thành viên từ</string>
+
+    <!-- Common -->
+    <string name="cancel">Hủy</string>
+    <string name="ok">OK</string>
+    <string name="save">Lưu</string>
+    <string name="delete">Xóa</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="loading">Đang tải…</string>
+    <string name="error">Lỗi</string>
+    <string name="success">Thành công</string>
+    <string name="remind">Nhắc nhở</string>
+    <string name="settle_up">Tất toán</string>
+    <string name="add_expense">Thêm chi tiêu</string>
+    <string name="join_code_hint">Ví dụ: ABC123</string>
+    <string name="enter_join_code">Nhập mã tham gia</string>
 </resources>

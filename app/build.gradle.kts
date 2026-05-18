@@ -37,6 +37,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.preference)
     
     // Firebase dependencies
     implementation(platform(libs.firebase.bom))

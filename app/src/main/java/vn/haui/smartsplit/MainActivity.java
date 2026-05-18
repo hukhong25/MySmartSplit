@@ -3,29 +3,41 @@ package vn.haui.smartsplit;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String PREF_DARK_MODE = "dark_mode_enabled";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply saved dark mode preference before setContentView
+        boolean isDark = PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(PREF_DARK_MODE, false);
+        AppCompatDelegate.setDefaultNightMode(
+                isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Chuyển sang màn hình tương ứng sau 2 giây (Splash Screen)
+        // Splash: chuyển màn hình sau 1.8 giây
         new Handler().postDelayed(() -> {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            Intent intent;
             if (currentUser != null) {
-                // Nếu đã đăng nhập, vào thẳng Dashboard
-                startActivity(new Intent(MainActivity.this, DashboardActivity.class));
+                intent = new Intent(MainActivity.this, HomeContainerActivity.class);
             } else {
-                // Nếu chưa đăng nhập, vào màn hình Login
-                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                intent = new Intent(MainActivity.this, LoginActivity.class);
             }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
             finish();
-        }, 2000);
+        }, 1800);
     }
 }

@@ -3,18 +3,62 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Primary Palette -->
-    <color name="colorPrimary">#6750A4</color>
-    <color name="colorPrimaryDark">#4F378B</color>
-    <color name="colorAccent">#D0BCFF</color>
+    <!-- Primary Green (Splitwise teal-green) -->
+    <color name="colorPrimary">#1CC29F</color>
+    <color name="colorPrimaryDark">#159A7F</color>
+    <color name="colorPrimaryLight">#E6F9F5</color>
+    <color name="colorPrimaryVariant">#0D7A62</color>
+
+    <!-- Secondary / Accent -->
+    <color name="colorAccent">#26D4AC</color>
+    <color name="colorAccentLight">#E8F8F4</color>
 
     <!-- Status Colors -->
-    <color name="colorOwe">#E91E63</color> <!-- Pinkish Red -->
-    <color name="colorOwed">#2E7D32</color> <!-- Deep Green -->
+    <color name="colorOwe">#E53935</color>
+    <color name="colorOweLight">#FFEBEE</color>
+    <color name="colorOwed">#1CC29F</color>
+    <color name="colorOwedLight">#E6F9F5</color>
+    <color name="colorSettled">#9E9E9E</color>
+    <color name="colorSettledLight">#F5F5F5</color>
 
-    <!-- Dashboard Card Gradient -->
-    <color name="gradientStart">#6750A4</color>
-    <color name="gradientEnd">#9575CD</color>
+    <!-- Backgrounds -->
+    <color name="backgroundColor">#F4FAF8</color>
+    <color name="surfaceColor">#FFFFFF</color>
+    <color name="surfaceVariant">#F0F4F2</color>
 
-    <color name="backgroundColor">#F8F9FA</color>
+    <!-- Text -->
+    <color name="textPrimary">#1A2420</color>
+    <color name="textSecondary">#6B7C79</color>
+    <color name="textHint">#9EAAA7</color>
+    <color name="textOnPrimary">#FFFFFF</color>
+
+    <!-- Card & Divider -->
+    <color name="cardBackground">#FFFFFF</color>
+    <color name="dividerColor">#E8EFEC</color>
+    <color name="strokeColor">#D0DDD9</color>
+
+    <!-- Balance Card Gradient -->
+    <color name="gradientStart">#1CC29F</color>
+    <color name="gradientEnd">#159A7F</color>
+    <color name="gradientMid">#18B394</color>
+
+    <!-- Bottom Nav -->
+    <color name="navSelected">#1CC29F</color>
+    <color name="navUnselected">#9EAAA7</color>
+    <color name="navBackground">#FFFFFF</color>
+
+    <!-- Category Colors (for Stats) -->
+    <color name="catFood">#1CC29F</color>
+    <color name="catTravel">#3B82F6</color>
+    <color name="catShopping">#8B5CF6</color>
+    <color name="catEntertainment">#F59E0B</color>
+    <color name="catOther">#9CA3AF</color>
+
+    <!-- Avatar background colors -->
+    <color name="avatarBg1">#1CC29F</color>
+    <color name="avatarBg2">#3B82F6</color>
+    <color name="avatarBg3">#8B5CF6</color>
+    <color name="avatarBg4">#F59E0B</color>
+    <color name="avatarBg5">#EF4444</color>
+    <color name="avatarBg6">#EC4899</color>
 </resources>

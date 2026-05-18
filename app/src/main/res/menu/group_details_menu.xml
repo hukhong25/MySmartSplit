@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_invite"
+        android:title="Mời thành viên"
+        android:icon="@android:drawable/ic_menu_share"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_group_settings"
+        android:title="Cài đặt nhóm"
+        app:showAsAction="never" />
+</menu>
