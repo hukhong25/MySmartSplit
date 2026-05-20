@@ -41,6 +41,7 @@
         <activity android:name=".AddTransactionActivity" />
         <activity android:name=".SettleUpActivity" />
         <activity android:name=".SettleDetailActivity" />
+        <activity android:name=".GroupMembersActivity" />
 
     </application>
 

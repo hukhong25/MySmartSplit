@@ -5,20 +5,28 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import vn.haui.smartsplit.adapters.MemberAdapter;
 import vn.haui.smartsplit.models.Group;
+import vn.haui.smartsplit.models.User;
 
 public class CreateGroupActivity extends AppCompatActivity {
 
-    private EditText etGroupName;
-    private Button btnCreateGroup;
+    private EditText etGroupName, etMemberEmail;
+    private Button btnCreateGroup, btnAddMember;
+    private RecyclerView rvAddedMembers;
+    private MemberAdapter memberAdapter;
+    private List<User> addedMembers;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
@@ -31,7 +39,26 @@ public class CreateGroupActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         etGroupName = findViewById(R.id.etGroupName);
+        etMemberEmail = findViewById(R.id.etMemberEmail);
         btnCreateGroup = findViewById(R.id.btnCreateGroup);
+        btnAddMember = findViewById(R.id.btnAddMember);
+        rvAddedMembers = findViewById(R.id.rvAddedMembers);
+
+        addedMembers = new ArrayList<>();
+        
+        String currentUserId = mAuth.getUid();
+        
+        // Khởi tạo adapter với constructor mới
+        // adminId và currentUserId truyền giống nhau vì người tạo là admin tạm thời
+        memberAdapter = new MemberAdapter(addedMembers, currentUserId, currentUserId, user -> {
+            addedMembers.remove(user);
+            memberAdapter.notifyDataSetChanged();
+        });
+        
+        rvAddedMembers.setLayoutManager(new LinearLayoutManager(this));
+        rvAddedMembers.setAdapter(memberAdapter);
+
+        btnAddMember.setOnClickListener(v -> addMemberByEmail());
 
         btnCreateGroup.setOnClickListener(v -> {
             String groupName = etGroupName.getText().toString().trim();
@@ -43,13 +70,56 @@ public class CreateGroupActivity extends AppCompatActivity {
         });
     }
 
+    private void addMemberByEmail() {
+        String email = etMemberEmail.getText().toString().trim();
+        if (email.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập email", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (mAuth.getCurrentUser() != null && email.equalsIgnoreCase(mAuth.getCurrentUser().getEmail())) {
+            Toast.makeText(this, "Bạn đã là thành viên của nhóm", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Kiểm tra trùng lặp trong danh sách tạm
+        for (User u : addedMembers) {
+            if (email.equalsIgnoreCase(u.getEmail())) {
+                Toast.makeText(this, "Người dùng này đã có trong danh sách", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            User user = document.toObject(User.class);
+                            addedMembers.add(user);
+                            memberAdapter.notifyDataSetChanged();
+                            etMemberEmail.setText("");
+                            Toast.makeText(this, "Đã thêm " + user.getName(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "Không tìm thấy người dùng với email này", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void createGroupInFirebase(String groupName) {
+        if (mAuth.getCurrentUser() == null) return;
+        
         String currentUserId = mAuth.getCurrentUser().getUid();
         String groupId = db.collection("groups").document().getId();
         String joinCode = generateJoinCode();
 
         List<String> memberIds = new ArrayList<>();
-        memberIds.add(currentUserId);
+        memberIds.add(currentUserId); // Thêm trưởng nhóm
+        for (User u : addedMembers) {
+            memberIds.add(u.getUid()); // Thêm các thành viên đã chọn
+        }
 
         Group newGroup = new Group(groupId, groupName, memberIds, currentUserId, joinCode);
 
@@ -57,7 +127,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         db.collection("groups").document(groupId)
                 .set(newGroup)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Tạo nhóm thành công! Mã tham gia: " + joinCode, Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Tạo nhóm thành công!", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {

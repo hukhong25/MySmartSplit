@@ -39,7 +39,6 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
     private String groupId, groupName;
     private String joinCode;
     private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
     private ListenerRegistration expenseListener;
 
     @Override
@@ -48,7 +47,6 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
         setContentView(R.layout.activity_group_details);
 
         db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
         groupId = getIntent().getStringExtra("GROUP_ID");
         groupName = getIntent().getStringExtra("GROUP_NAME");
 
@@ -79,7 +77,7 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
                     fabAddGroupExpense.setOnClickListener(v -> openAddExpense());
                 } else {
                     showBalances();
-                    fabAddGroupExpense.setImageResource(android.R.drawable.ic_menu_send); // Icon for Settle Up
+                    fabAddGroupExpense.setImageResource(android.R.drawable.ic_menu_send);
                     fabAddGroupExpense.setOnClickListener(v -> openSettleUp());
                 }
             }
@@ -96,11 +94,17 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
             return true;
-        } else if (item.getItemId() == R.id.action_invite) {
+        } else if (id == R.id.action_invite) {
             shareInviteCode();
+            return true;
+        } else if (id == R.id.action_manage_members) {
+            Intent intent = new Intent(this, GroupMembersActivity.class);
+            intent.putExtra("GROUP_ID", groupId);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -174,14 +178,16 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
         removeExpenseListener();
         db.collection("groups").document(groupId).get()
                 .addOnSuccessListener(groupDoc -> {
-                    List<String> memberIds = (List<String>) groupDoc.get("memberIds");
-                    if (memberIds == null) return;
+                    Object memberIdsObj = groupDoc.get("memberIds");
+                    if (!(memberIdsObj instanceof List)) return;
+                    List<String> memberIds = (List<String>) memberIdsObj;
 
                     List<User> members = new ArrayList<>();
                     AtomicInteger fetchCount = new AtomicInteger(0);
                     for (String uid : memberIds) {
                         db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
-                            members.add(userDoc.toObject(User.class));
+                            User u = userDoc.toObject(User.class);
+                            if (u != null) members.add(u);
                             if (fetchCount.incrementAndGet() == memberIds.size()) {
                                 computeAndShowBalances(members);
                             }
@@ -201,14 +207,18 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
                         if (!Expense.STATUS_COMPLETED.equals(exp.getStatus())) continue;
 
                         String payer = exp.getPayerId();
-                        if (balances.containsKey(payer)) 
-                            balances.put(payer, balances.get(payer) + exp.getAmount());
+                        if (balances.containsKey(payer)) {
+                            Double current = balances.get(payer);
+                            balances.put(payer, (current != null ? current : 0.0) + exp.getAmount());
+                        }
 
                         Map<String, Double> split = exp.getSplitDetails();
                         if (split != null) {
                             for (Map.Entry<String, Double> entry : split.entrySet()) {
-                                if (balances.containsKey(entry.getKey()))
-                                    balances.put(entry.getKey(), balances.get(entry.getKey()) - entry.getValue());
+                                if (balances.containsKey(entry.getKey())) {
+                                    Double current = balances.get(entry.getKey());
+                                    balances.put(entry.getKey(), (current != null ? current : 0.0) - entry.getValue());
+                                }
                             }
                         }
                     }
@@ -232,6 +242,15 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
         Toast.makeText(this, "Đã gửi lời nhắc đến " + user.getName(), Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onSettleTransaction(BalanceAdapter.Transaction transaction) {
+        Intent intent = new Intent(this, SettleUpActivity.class);
+        intent.putExtra("GROUP_ID", groupId);
+        intent.putExtra("TARGET_USER_ID", transaction.toId);
+        intent.putExtra("AMOUNT", transaction.amount);
+        startActivity(intent);
+    }
+
     private void removeExpenseListener() {
         if (expenseListener != null) { expenseListener.remove(); expenseListener = null; }
     }
@@ -240,5 +259,5 @@ public class GroupDetailsActivity extends AppCompatActivity implements BalanceAd
     protected void onDestroy() { super.onDestroy(); removeExpenseListener(); }
 
     @Override
-    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
+    public boolean onSupportNavigateUp() { finish(); return true; }
 }
