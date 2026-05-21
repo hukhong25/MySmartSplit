@@ -45,13 +45,34 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/btnRemoveMember"
+    <LinearLayout
+        android:id="@+id/layoutMemberActions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_delete"
-        android:contentDescription="Xóa thành viên"
-        android:visibility="gone" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/btnEditMember"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_edit"
+            android:contentDescription="Sửa thành viên"
+            android:visibility="visible" />
+
+        <ImageButton
+            android:id="@+id/btnRemoveMember"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="Xóa thành viên"
+            android:visibility="visible" />
+
+    </LinearLayout>
 
 </LinearLayout>

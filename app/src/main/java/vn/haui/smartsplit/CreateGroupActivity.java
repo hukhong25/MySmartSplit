@@ -47,12 +47,22 @@ public class CreateGroupActivity extends AppCompatActivity {
         addedMembers = new ArrayList<>();
         
         String currentUserId = mAuth.getUid();
-        
-        // Khởi tạo adapter với constructor mới
-        // adminId và currentUserId truyền giống nhau vì người tạo là admin tạm thời
-        memberAdapter = new MemberAdapter(addedMembers, currentUserId, currentUserId, user -> {
-            addedMembers.remove(user);
-            memberAdapter.notifyDataSetChanged();
+
+
+        // SỬA ĐOẠN DÒNG 53 THÀNH CẤU TRÚC NÀY:
+        memberAdapter = new MemberAdapter(addedMembers, currentUserId, currentUserId, new MemberAdapter.OnMemberActionListener() {
+            @Override
+            public void onEditMember(User user) {
+                // Màn hình Tạo nhóm mới thì thường không cần chỉnh sửa vai trò, bạn có thể để trống hoặc thông báo
+                Toast.makeText(CreateGroupActivity.this, "Không thể sửa vai trò khi đang tạo nhóm", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRemoveMember(User user) {
+                // Logic xóa thành viên khỏi danh sách tạm chuẩn bị tạo nhóm (giữ nguyên logic cũ của bạn)
+                addedMembers.remove(user);
+                memberAdapter.notifyDataSetChanged();
+            }
         });
         
         rvAddedMembers.setLayoutManager(new LinearLayoutManager(this));
