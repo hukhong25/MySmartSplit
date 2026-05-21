@@ -168,14 +168,14 @@ public class SettleUpActivity extends AppCompatActivity {
 
         btnConfirmSettle.setEnabled(false);
         if (imageUri != null) {
-            String fileName = "proofs/" + UUID.randomUUID().toString() + ".jpg";
-            StorageReference ref = storage.getReference().child(fileName);
-            ref.putFile(imageUri).addOnSuccessListener(t -> ref.getDownloadUrl().addOnSuccessListener(uri -> 
-                saveSettlement(from, to, amount, uri.toString())
-            )).addOnFailureListener(e -> {
+            // Convert to Base64 (max 600px for receipt image details)
+            String base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), imageUri, 600);
+            if (base64Image == null) {
                 btnConfirmSettle.setEnabled(true);
-                Toast.makeText(this, "Lỗi tải ảnh", Toast.LENGTH_SHORT).show();
-            });
+                Toast.makeText(this, "Lỗi xử lý ảnh", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            saveSettlement(from, to, amount, base64Image);
         } else {
             saveSettlement(from, to, amount, null);
         }

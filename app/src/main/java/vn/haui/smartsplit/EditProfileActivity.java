@@ -76,16 +76,23 @@ public class EditProfileActivity extends AppCompatActivity {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             etDisplayName.setText(user.getDisplayName());
-            if (user.getPhotoUrl() != null) {
-                Glide.with(this).load(user.getPhotoUrl()).into(ivAvatar);
-                tvAvatarInitial.setVisibility(View.GONE);
-            } else {
-                tvAvatarInitial.setVisibility(View.VISIBLE);
-                String name = user.getDisplayName();
-                if (name != null && !name.isEmpty()) {
-                    tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
-                }
-            }
+            db.collection("users").document(user.getUid()).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        String photoUrlStr = documentSnapshot.getString("photoUrl");
+                        if (photoUrlStr != null && !photoUrlStr.isEmpty()) {
+                            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, photoUrlStr, ivAvatar, 0);
+                            tvAvatarInitial.setVisibility(View.GONE);
+                        } else if (user.getPhotoUrl() != null) {
+                            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, user.getPhotoUrl().toString(), ivAvatar, 0);
+                            tvAvatarInitial.setVisibility(View.GONE);
+                        } else {
+                            tvAvatarInitial.setVisibility(View.VISIBLE);
+                            String name = user.getDisplayName();
+                            if (name != null && !name.isEmpty()) {
+                                tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+                            }
+                        }
+                    });
         }
 
         frameAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
@@ -114,35 +121,38 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void uploadImageAndSaveProfile(FirebaseUser user, String newName) {
-        final StorageReference ref = storage.getReference().child("avatars/" + user.getUid() + ".jpg");
-        UploadTask uploadTask = ref.putFile(selectedImageUri);
+        // Convert selected image to compressed Base64 string (max 300px for avatar)
+        String base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), selectedImageUri, 300);
+        if (base64Image == null) {
+            btnSave.setEnabled(true);
+            Toast.makeText(this, "Lỗi xử lý ảnh", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        uploadTask.continueWithTask(task -> {
-            if (!task.isSuccessful()) {
-                if (task.getException() != null) throw task.getException();
-            }
-            return ref.getDownloadUrl();
-        }).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Uri downloadUri = task.getResult();
-                updateProfile(user, newName, downloadUri);
-            } else {
-                btnSave.setEnabled(true);
-                Toast.makeText(this, "Lỗi tải ảnh: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void updateProfile(FirebaseUser user, String newName, Uri photoUri) {
         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                 .setDisplayName(newName)
-                .setPhotoUri(photoUri)
                 .build();
 
         user.updateProfile(profileUpdates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        updateFirestoreProfile(user.getUid(), newName, photoUri != null ? photoUri.toString() : null);
+                        updateFirestoreProfile(user.getUid(), newName, base64Image);
+                    } else {
+                        btnSave.setEnabled(true);
+                        Toast.makeText(this, "Lỗi cập nhật profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void updateProfile(FirebaseUser user, String newName, Uri photoUri) {
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName(newName)
+                .build();
+
+        user.updateProfile(profileUpdates)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        updateFirestoreProfile(user.getUid(), newName, null);
                     } else {
                         btnSave.setEnabled(true);
                         Toast.makeText(this, "Lỗi cập nhật profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();

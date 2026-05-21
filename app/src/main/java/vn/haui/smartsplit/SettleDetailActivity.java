@@ -94,7 +94,7 @@ public class SettleDetailActivity extends AppCompatActivity {
 
         if (currentExpense.getProofImageUrl() != null && !currentExpense.getProofImageUrl().isEmpty()) {
             ivDetailProof.setVisibility(View.VISIBLE);
-            Glide.with(this).load(currentExpense.getProofImageUrl()).into(ivDetailProof);
+            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, currentExpense.getProofImageUrl(), ivDetailProof, 0);
         } else {
             ivDetailProof.setVisibility(View.GONE);
         }
