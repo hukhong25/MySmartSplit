@@ -24,6 +24,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import vn.haui.smartsplit.ChangePasswordActivity;
 import vn.haui.smartsplit.EditProfileActivity;
@@ -35,6 +36,7 @@ public class ProfileFragment extends Fragment {
     private static final String PREF_DARK_MODE = "dark_mode_enabled";
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private SharedPreferences prefs;
     private TextView tvAvatarInitial, tvProfileName, tvProfileEmail;
     private ImageView ivAvatar;
@@ -61,6 +63,7 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
         tvAvatarInitial = view.findViewById(R.id.tvAvatarInitial);
@@ -116,21 +119,44 @@ public class ProfileFragment extends Fragment {
             tvProfileName.setText(name != null && !name.isEmpty() ? name : "Người dùng");
             tvProfileEmail.setText(email != null ? email : "");
 
-            if (user.getPhotoUrl() != null) {
-                if (ivAvatar != null) {
-                    ivAvatar.setVisibility(View.VISIBLE);
-                    Glide.with(this).load(user.getPhotoUrl()).into(ivAvatar);
-                }
-                tvAvatarInitial.setVisibility(View.GONE);
-            } else {
-                if (ivAvatar != null) ivAvatar.setVisibility(View.GONE);
-                tvAvatarInitial.setVisibility(View.VISIBLE);
-                if (name != null && !name.isEmpty()) {
-                    tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
-                } else {
-                    tvAvatarInitial.setText("U");
-                }
-            }
+            db.collection("users").document(user.getUid()).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (!isAdded()) return;
+                        String photoUrlStr = documentSnapshot.getString("photoUrl");
+                        if (photoUrlStr != null && !photoUrlStr.isEmpty()) {
+                            if (ivAvatar != null) {
+                                ivAvatar.setVisibility(View.VISIBLE);
+                                vn.haui.smartsplit.utils.ImageUtils.loadImage(requireContext(), photoUrlStr, ivAvatar, R.drawable.bg_avatar_circle);
+                            }
+                            tvAvatarInitial.setVisibility(View.GONE);
+                        } else {
+                            if (user.getPhotoUrl() != null) {
+                                if (ivAvatar != null) {
+                                    ivAvatar.setVisibility(View.VISIBLE);
+                                    vn.haui.smartsplit.utils.ImageUtils.loadImage(requireContext(), user.getPhotoUrl().toString(), ivAvatar, R.drawable.bg_avatar_circle);
+                                }
+                                tvAvatarInitial.setVisibility(View.GONE);
+                            } else {
+                                if (ivAvatar != null) ivAvatar.setVisibility(View.GONE);
+                                tvAvatarInitial.setVisibility(View.VISIBLE);
+                                if (name != null && !name.isEmpty()) {
+                                    tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+                                } else {
+                                    tvAvatarInitial.setText("U");
+                                }
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (!isAdded()) return;
+                        if (ivAvatar != null) ivAvatar.setVisibility(View.GONE);
+                        tvAvatarInitial.setVisibility(View.VISIBLE);
+                        if (name != null && !name.isEmpty()) {
+                            tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+                        } else {
+                            tvAvatarInitial.setText("U");
+                        }
+                    });
         }
     }
 
