@@ -150,7 +150,15 @@ public class DashboardFragment extends Fragment {
 
                     for (QueryDocumentSnapshot doc : value) {
                         String status = doc.getString("status");
-                        if (!Expense.STATUS_COMPLETED.equals(status)) continue;
+                        Boolean isSettlement = doc.getBoolean("settlement");
+                        if (isSettlement == null) isSettlement = false;
+
+                        // Logic: Chấp nhận COMPLETED cho tất cả, hoặc PENDING nếu là settlement (để cập nhật số dư tạm thời)
+                        if (!Expense.STATUS_COMPLETED.equals(status)) {
+                            if (!(isSettlement && Expense.STATUS_PENDING.equals(status))) {
+                                continue;
+                            }
+                        }
 
                         String groupId = doc.getString("groupId");
                         if (groupId == null) continue;

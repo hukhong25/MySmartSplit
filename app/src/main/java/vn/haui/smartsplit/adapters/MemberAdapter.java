@@ -6,9 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import java.util.List;
 import vn.haui.smartsplit.R;
 import vn.haui.smartsplit.models.User;
@@ -56,11 +58,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         holder.tvName.setText(user.getUid().equals(currentUserId) ? user.getName() + " (Bạn)" : user.getName());
         holder.tvRole.setText(targetIsAdmin ? "Trưởng nhóm" : "Thành viên");
 
-        // Tạo avatar ký tự đầu
-        holder.tvInitial.setText(user.getName() != null && !user.getName().isEmpty()
-                ? String.valueOf(user.getName().charAt(0)).toUpperCase() : "?");
-
-        // Đổ màu nền ngẫu nhiên cho vòng tròn Avatar tinh tế hơn
+        // Đổ màu nền ngẫu nhiên cho vòng tròn Avatar tinh tế hơn (Giữ logic bo góc của bạn)
         if (holder.viewAvatarBg.getBackground() instanceof GradientDrawable) {
             GradientDrawable drawable = (GradientDrawable) holder.viewAvatarBg.getBackground();
             drawable.setColor(COLORS[position % COLORS.length]);
@@ -68,8 +66,24 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             holder.viewAvatarBg.setBackgroundColor(COLORS[position % COLORS.length]);
         }
 
-        // LOGIC ẨN HIỆN CỤM NÚT SỬA / XÓA:
-        // Chỉ hiện lên nếu người đang xem màn hình là Admin và dòng hiện tại KHÔNG PHẢI là chính bản thân Admin đó
+        // Load avatar nếu có (Tích hợp tính năng Glide của người kia)
+        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
+            holder.ivAvatar.setVisibility(View.VISIBLE);
+            holder.tvInitial.setVisibility(View.GONE);
+            Glide.with(holder.itemView.getContext())
+                    .load(user.getPhotoUrl())
+                    .circleCrop()
+                    .into(holder.ivAvatar);
+        } else {
+            holder.ivAvatar.setVisibility(View.GONE);
+            holder.tvInitial.setVisibility(View.VISIBLE);
+
+            String name = user.getName();
+            holder.tvInitial.setText(name != null && !name.isEmpty()
+                    ? String.valueOf(name.charAt(0)).toUpperCase() : "?");
+        }
+
+        // LOGIC ẨN HIỆN CỤM NÚT SỬA / XÓA (Giữ logic phân quyền chặt chẽ của bạn)
         if (viewerIsAdmin && !targetIsAdmin) {
             holder.btnEdit.setVisibility(View.VISIBLE);
             holder.btnRemove.setVisibility(View.VISIBLE);
@@ -78,7 +92,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             holder.btnRemove.setVisibility(View.GONE);
         }
 
-        // BẮT SỰ KIỆN CLICK TRUYỀN NGƯỢC VỀ ACTIVITY XỬ LÝ DIALOG
+        // BẮT SỰ KIỆN CLICK TRUYỀN NGƯỢC VỀ ACTIVITY (Giữ đầy đủ cả 2 nút)
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEditMember(user);
         });
@@ -94,7 +108,8 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     static class MemberViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvRole, tvInitial;
         View viewAvatarBg;
-        ImageButton btnEdit, btnRemove; // Khai báo thêm nút Sửa
+        ImageView ivAvatar;
+        ImageButton btnEdit, btnRemove;
 
         public MemberViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -102,8 +117,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             tvRole = itemView.findViewById(R.id.tvMemberRole);
             tvInitial = itemView.findViewById(R.id.tvAvatarInitial);
             viewAvatarBg = itemView.findViewById(R.id.viewAvatarBg);
-
-            // Ánh xạ chính xác theo ID trong file layout XML mới của bạn
+            ivAvatar = itemView.findViewById(R.id.ivMemberAvatar);
             btnEdit = itemView.findViewById(R.id.btnEditMember);
             btnRemove = itemView.findViewById(R.id.btnRemoveMember);
         }

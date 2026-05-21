@@ -6,21 +6,34 @@
     android:padding="12dp"
     android:gravity="center_vertical">
 
-    <View
-        android:id="@+id/viewAvatarBg"
+    <FrameLayout
         android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_avatar_circle" />
+        android:layout_height="40dp">
 
-    <TextView
-        android:id="@+id/tvAvatarInitial"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginStart="-40dp"/>
+        <View
+            android:id="@+id/viewAvatarBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_avatar_circle" />
+
+        <TextView
+            android:id="@+id/tvAvatarInitial"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/ivMemberAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_avatar_circle"
+            android:clipToOutline="true"
+            android:contentDescription="Ảnh đại diện" />
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
