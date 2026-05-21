@@ -45,7 +45,7 @@ public class NotificationsActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Thông báo");
+            getSupportActionBar().setTitle(R.string.notifications_title);
         }
 
         rvNotifications = findViewById(R.id.rvNotifications);

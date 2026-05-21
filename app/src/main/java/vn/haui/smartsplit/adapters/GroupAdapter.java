@@ -60,14 +60,17 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
     @Override
     public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
         Group group = groupList.get(position);
+        android.content.Context ctx = holder.itemView.getContext();
 
         holder.tvGroupName.setText(group.getName());
         int memberCount = group.getMemberIds() != null ? group.getMemberIds().size() : 0;
-        holder.tvMemberCount.setText(memberCount + " thành viên");
+
+        // Sử dụng chuỗi định dạng động cho số lượng thành viên
+        holder.tvMemberCount.setText(ctx.getString(R.string.group_member_count_format, memberCount));
 
         // Default balance display (no per-user balance in Group model currently)
-        holder.tvGroupBalance.setText("₫0");
-        holder.tvGroupStatus.setText("Đã tất toán");
+        holder.tvGroupBalance.setText(ctx.getString(R.string.default_currency_zero));
+        holder.tvGroupStatus.setText(ctx.getString(R.string.status_settled_up));
         holder.tvGroupStatus.setTextColor(Color.parseColor("#9E9E9E"));
         if (holder.viewStatusDot != null) {
             holder.viewStatusDot.setBackgroundColor(Color.parseColor("#9E9E9E"));

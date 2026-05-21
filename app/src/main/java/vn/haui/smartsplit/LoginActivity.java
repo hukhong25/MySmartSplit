@@ -2,13 +2,11 @@ package vn.haui.smartsplit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.button.MaterialButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends BaseActivity {
@@ -35,7 +33,7 @@ public class LoginActivity extends BaseActivity {
             String password = etPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, getString(R.string.toast_missing_info), Toast.LENGTH_SHORT).show();
             } else {
                 loginUser(email, password);
             }
@@ -51,12 +49,13 @@ public class LoginActivity extends BaseActivity {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, getString(R.string.toast_login_success), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, HomeContainerActivity.class));
                         finish();
                     } else {
                         btnLogin.setEnabled(true);
-                        Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + task.getException().getMessage(),
+                        // Sử dụng string format động để đính kèm thông điệp lỗi hệ thống từ Firebase
+                        Toast.makeText(LoginActivity.this, getString(R.string.toast_login_failed_prefix, task.getException().getMessage()),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

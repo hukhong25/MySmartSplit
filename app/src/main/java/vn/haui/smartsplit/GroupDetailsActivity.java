@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,7 +33,7 @@ import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
 
 public class GroupDetailsActivity extends BaseActivity implements
-        BalanceAdapter.OnActionClickListener, 
+        BalanceAdapter.OnActionClickListener,
         GroupExpenseAdapter.OnExpenseActionListener {
 
     private RecyclerView rvGroupContent;
@@ -110,7 +109,7 @@ public class GroupDetailsActivity extends BaseActivity implements
                     if (group != null) {
                         joinCode = group.getJoinCode();
                         if (getSupportActionBar() != null) {
-                            getSupportActionBar().setSubtitle("Mã: " + joinCode);
+                            getSupportActionBar().setSubtitle(getString(R.string.group_subtitle_code_prefix, joinCode));
                         }
                     }
                 });
@@ -146,7 +145,7 @@ public class GroupDetailsActivity extends BaseActivity implements
     @Override
     public void onExpenseEdit(Expense expense) {
         if (expense.isSettlement()) {
-            Toast.makeText(this, "Không thể sửa giao dịch tất toán", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_cannot_edit_settlement), Toast.LENGTH_SHORT).show();
             return;
         }
         Intent intent = new Intent(this, AddGroupExpenseActivity.class);
@@ -158,24 +157,25 @@ public class GroupDetailsActivity extends BaseActivity implements
     @Override
     public void onExpenseDelete(Expense expense) {
         if (expense.isSettlement()) {
-            Toast.makeText(this, "Không thể xóa giao dịch tất toán", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_cannot_delete_settlement), Toast.LENGTH_SHORT).show();
             return;
         }
         new AlertDialog.Builder(this)
-                .setTitle("Xác nhận xóa")
-                .setMessage("Bạn có chắc chắn muốn xóa khoản chi này?")
-                .setPositiveButton("Đồng ý", (dialog, which) -> {
+                .setTitle(getString(R.string.dialog_confirm_delete_title))
+                .setMessage(getString(R.string.dialog_confirm_delete_expense_msg))
+                .setPositiveButton(getString(R.string.dialog_action_agree), (dialog, which) -> {
                     db.collection("expenses").document(expense.getId()).delete()
-                            .addOnSuccessListener(aVoid -> Toast.makeText(this, "Xóa thành công", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_delete_success), Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
     }
 
     private void showBalances() {
         db.collection("groups").document(groupId).get().addOnSuccessListener(groupDoc -> {
             if (currentTab != 1) return;
+            @SuppressWarnings("unchecked")
             List<String> memberIds = (List<String>) groupDoc.get("memberIds");
             if (memberIds == null) return;
 
@@ -199,7 +199,7 @@ public class GroupDetailsActivity extends BaseActivity implements
                 .whereEqualTo("groupId", groupId)
                 .addSnapshotListener((querySnapshot, error) -> {
                     if (error != null || currentTab != 1) return;
-                    
+
                     Map<String, Double> balances = new HashMap<>();
                     for (User u : members) balances.put(u.getUid(), 0.0);
 
@@ -253,19 +253,24 @@ public class GroupDetailsActivity extends BaseActivity implements
     @Override
     public void onRemind(User user, double balance) {
         String currentUserName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-        if (currentUserName == null || currentUserName.isEmpty()) currentUserName = "Một thành viên";
+        if (currentUserName == null || currentUserName.isEmpty()) {
+            currentUserName = getString(R.string.default_member_name);
+        }
+
+        String title = getString(R.string.notif_title_debt_remind);
+        String content = getString(R.string.notif_content_debt_remind_format, currentUserName, (long) Math.abs(balance), groupName);
 
         String notifId = db.collection("notifications").document().getId();
         AppNotification notif = new AppNotification(
                 notifId,
                 user.getUid(),
-                "Lời nhắc nợ",
-                currentUserName + " nhắc bạn thanh toán khoản nợ " + (long)Math.abs(balance) + " VND trong nhóm " + groupName,
+                title,
+                content,
                 "REMIND",
                 groupId
         );
         db.collection("notifications").document(notifId).set(notif)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Đã gửi lời nhắc đến " + user.getName(), Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_remind_sent_success, user.getName()), Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -313,10 +318,10 @@ public class GroupDetailsActivity extends BaseActivity implements
 
     private void shareInviteCode() {
         if (joinCode == null) return;
-        String message = "Tham gia nhóm '" + groupName + "' trên SmartSplit bằng mã: " + joinCode;
+        String message = getString(R.string.share_invite_msg_format, groupName, joinCode);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TEXT, message);
-        startActivity(Intent.createChooser(intent, "Mời thành viên qua"));
+        startActivity(Intent.createChooser(intent, getString(R.string.share_chooser_title)));
     }
 }

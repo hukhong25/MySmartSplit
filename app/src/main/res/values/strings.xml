@@ -115,13 +115,10 @@
     <string name="header_optimized_settlement">GỢI Ý TẤT TOÁN TỐI ƯU</string>
     <string name="header_detailed_balance">SỐ DƯ CHI TIẾT</string>
     <string name="user_you_short">Bạn</string>
-    <string name="default_username">Người dùng</string>
     <string name="transaction_arrow_initial">⇄</string>
     <string name="settle_up_btn_text">Tất toán</string>
     <string name="remind_debt_btn_text">Nhắc nợ</string>
     <string name="settled_up_status">Đã sòng phẳng</string>
-
-    <!-- Các chuỗi định dạng động (String Formats) -->
     <string name="transaction_direction_format">%1$s ➔ %2$s</string>
     <string name="transfer_amount_format">Cần chuyển: %1$s₫</string>
     <string name="username_with_you_suffix">%1$s (Bạn)</string>
@@ -158,4 +155,189 @@
     <string name="default_notification_time">12:30 15/10/2023</string>
     <string name="transaction_icon_desc">Biểu tượng giao dịch</string>
     <string name="options_button_desc">Tùy chọn</string>
+    <string name="status_settled_up">Đã tất toán</string>
+    <string name="status_unknown">Không rõ</string>
+    <string name="status_pending_suffix"> (Chờ xác nhận)</string>
+    <string name="status_rejected_suffix"> (Bị từ chối)</string>
+    <string name="expense_not_involved">Bạn không tham gia</string>
+    <string name="menu_edit">Chỉnh sửa</string>
+    <string name="menu_delete">Xóa</string>
+    <string name="role_admin">Trưởng nhóm</string>
+    <string name="role_member">Thành viên</string>
+    <string name="default_initial_question_mark">?</string>
+    <string name="expense_lend_format">Bạn cho mượn: %,.0f VND</string>
+    <string name="expense_owe_format">Bạn nợ: %,.0f VND</string>
+    <string name="expense_note_format">Trả bởi: %1$s  •  %2$s%3$s</string>
+    <string name="dialog_action_join">Tham gia</string>
+    <string name="dialog_action_cancel">Hủy</string>
+    <string name="toast_join_group_success">Đã tham gia nhóm thành công!</string>
+    <string name="toast_join_code_invalid">Mã tham gia không hợp lệ</string>
+    <string name="default_username">Người dùng</string>
+    <string name="dialog_logout_title">Đăng xuất</string>
+    <string name="dialog_logout_message">Bạn có chắc muốn đăng xuất?</string>
+    <string name="dialog_action_logout">Đăng xuất</string>
+    <string name="cat_food">Ăn uống</string>
+    <string name="cat_travel">Di chuyển</string>
+    <string name="cat_shopping">Mua sắm</string>
+    <string name="cat_entertainment">Giải trí</string>
+    <string name="cat_other">Khác</string>
+    <string name="donut_center_title">Tổng chi tiêu</string>
+    <string name="currency_short_prefix">₫%1$s</string>
+    <string name="currency_prefix_format">₫%1$s</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="trend_percent_format">%1$s %2$d%%</string>
+    <string name="trend_desc_less_format">Bạn đã chi tiêu ít hơn %1$d%% so với tháng trước.</string>
+    <string name="trend_desc_more_format">Bạn đã chi tiêu nhiều hơn %1$d%% so với tháng trước.</string>
+    <string name="dialog_language_title">Chọn ngôn ngữ / Select Language</string>
+    <string name="dialog_language_cancel">Hủy / Cancel</string>
+    <string name="lang_vietnamese">Tiếng Việt</string>
+    <string name="lang_english">English</string>
+    <string name="currency_with_unit_format">%1$s VNĐ</string>
+    <string name="toast_error_prefix">Lỗi: %1$s</string>
+    <string name="group_member_count_format">%1$d thành viên</string>
+    <string name="dialog_join_group_title">Nhập mã tham gia</string>
+    <string name="dialog_join_group_hint">Ví dụ: ABC123</string>
+    <string name="group_count_format">%1$d nhóm</string>
+    <string name="title_add_expense">Thêm khoản chi</string>
+    <string name="title_edit_expense">Sửa khoản chi</string>
+    <string name="btn_update">Cập nhật</string>
+
+    <!-- Các chuỗi thông báo Toast -->
+    <string name="toast_missing_info">Vui lòng nhập đầy đủ thông tin</string>
+    <string name="toast_missing_split_members">Vui lòng chọn ít nhất một người chia</string>
+    <string name="toast_add_expense_success">Thêm khoản chi thành công</string>
+    <string name="toast_update_expense_success">Cập nhật khoản chi thành công</string>
+
+    <!-- Hệ thống thông báo (Notifications) -->
+    <string name="notif_title_new_expense">Khoản chi mới</string>
+    <string name="notif_title_update_expense">Cập nhật chi tiêu</string>
+    <string name="notif_content_new_expense_format">%1$s đã thêm: %2$s (%3$d VND)</string>
+    <string name="notif_content_update_expense_format">%1$s đã cập nhật: %2$s (%3$d VND)</string>
+
+    <!-- Biểu mẫu Giao dịch -->
+    <string name="toast_invalid_amount">Số tiền không hợp lệ</string>
+    <string name="toast_not_logged_in">Bạn chưa đăng nhập</string>
+    <string name="toast_save_transaction_success">Đã lưu giao dịch thành công!</string>
+
+    <!-- Định dạng chuỗi động -->
+    <string name="date_format">%1$d/%2$d/%3$d</string>
+    <string name="toast_save_transaction_error_prefix">Lỗi lưu giao dịch: %1$s</string>
+    <string name="error_current_password_incorrect">Mật khẩu hiện tại không chính xác</string>
+    <string name="toast_change_password_success">Đổi mật khẩu thành công</string>
+    <string name="toast_reauth_failed">Xác thực thất bại</string>
+    <!-- Tạo nhóm -->
+    <string name="toast_cannot_edit_role_on_create">Không thể sửa vai trò khi đang tạo nhóm</string>
+    <string name="toast_missing_group_name">Vui lòng nhập tên nhóm</string>
+    <string name="toast_missing_email">Vui lòng nhập email</string>
+    <string name="toast_already_member">Bạn đã là thành viên của nhóm</string>
+    <string name="toast_user_already_in_list">Người dùng này đã có trong danh sách</string>
+    <string name="toast_user_email_not_found">Không tìm thấy người dùng với email này</string>
+    <string name="toast_create_group_success">Tạo nhóm thành công!</string>
+
+    <!-- Chuỗi định dạng động -->
+    <string name="toast_added_member_success">Đã thêm %1$s</string>
+    <!-- Màn hình Tổng quan -->
+    <string name="dialog_group_options_title">Tùy chọn nhóm</string>
+    <string name="dialog_option_create_group">Tạo nhóm mới</string>
+    <string name="dialog_option_join_with_code">Tham gia bằng mã</string>
+    <!-- Định dạng chuỗi động -->
+    <string name="dashboard_welcome_format">Chào, %1$s!</string>
+    <string name="toast_join_group_error_prefix">Lỗi khi tham gia: %1$s</string>
+    <!-- Sửa hồ sơ cá nhân -->
+    <string name="error_empty_display_name">Tên hiển thị không được để trống</string>
+    <string name="toast_update_profile_success">Cập nhật thông tin thành công</string>
+
+    <!-- Chuỗi định dạng động -->
+    <string name="toast_profile_update_error_prefix">Lỗi cập nhật profile: %1$s</string>
+    <string name="toast_cannot_edit_settlement">Không thể sửa giao dịch tất toán</string>
+    <string name="toast_cannot_delete_settlement">Không thể xóa giao dịch tất toán</string>
+    <string name="dialog_confirm_delete_title">Xác nhận xóa</string>
+    <string name="dialog_confirm_delete_expense_msg">Bạn có chắc chắn muốn xóa khoản chi này?</string>
+    <string name="dialog_action_agree">Đồng ý</string>
+    <string name="toast_delete_success">Xóa thành công</string>
+
+    <!-- Chia sẻ & Lời nhắc nợ -->
+    <string name="share_chooser_title">Mời thành viên qua</string>
+    <string name="notif_title_debt_remind">Lời nhắc nợ</string>
+
+    <!-- Các chuỗi cấu trúc động (String Format) -->
+    <string name="group_subtitle_code_prefix">Mã: %1$s</string>
+    <string name="toast_remind_sent_success">Đã gửi lời nhắc đến %1$s</string>
+    <string name="notif_content_debt_remind_format">%1$s nhắc bạn thanh toán khoản nợ %2$d VND trong nhóm %3$s</string>
+    <string name="share_invite_msg_format">Tham gia nhóm \'%1$s\' trên SmartSplit bằng mã: %2$s</string>
+    <!-- Quản lý thành viên nhóm -->
+    <string name="title_members">Thành viên</string>
+    <string name="menu_dissolve_group">Giải tán nhóm</string>
+    <string name="btn_dissolve">Giải tán</string>
+    <string name="btn_remove">Xóa</string>
+    <string name="hint_enter_gmail">Nhập gmail người dùng</string>
+
+    <!-- Các hộp thoại (Dialogs) -->
+    <string name="dialog_join_code_title">Mã tham gia nhóm</string>
+    <string name="dialog_add_member_title">Thêm thành viên</string>
+    <string name="dialog_transfer_admin_title">Chuyển quyền Trưởng nhóm</string>
+    <string name="dialog_remove_member_title">Xóa thành viên</string>
+    <string name="dialog_action_ok">OK</string>
+    <string name="dialog_action_add">Thêm</string>
+    <string name="dialog_action_confirm_transfer">Xác nhận chuyển</string>
+    <string name="dialog_dissolve_group_msg">Bạn có chắc chắn muốn giải tán nhóm này? Nhóm sẽ không còn hiển thị với bất kỳ ai nhưng dữ liệu vẫn được lưu trữ an toàn.</string>
+
+    <!-- Các thông báo Toast -->
+    <string name="toast_dissolve_group_success">Nhóm đã được giải tán thành công</string>
+    <string name="toast_user_not_found">Không tìm thấy người dùng</string>
+    <string name="toast_user_already_in_group">Người dùng đã ở trong nhóm</string>
+    <string name="toast_user_already_admin">Thành viên này đã là trưởng nhóm rồi</string>
+    <string name="toast_transfer_admin_success">Đã thay đổi quyền Trưởng nhóm thành công</string>
+    <string name="toast_remove_member_success">Đã xóa thành viên khỏi nhóm</string>
+    <string name="toast_permission_admin_edit_only">Chỉ trưởng nhóm mới có quyền chỉnh sửa</string>
+    <string name="toast_permission_admin_remove_only">Chỉ trưởng nhóm mới có quyền xóa</string>
+    <!-- Màn hình Đăng nhập -->
+    <string name="toast_login_success">Đăng nhập thành công</string>
+    <!-- Màn hình Đăng ký -->
+    <string name="error_password_mismatch">Mật khẩu không khớp</string>
+    <string name="error_password_too_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="toast_register_success">Đăng ký thành công</string>
+    <!-- Chi tiết giao dịch tất toán UI -->
+    <string name="title_transaction_detail">Chi tiết giao dịch</string>
+    <string name="detail_status_pending">Trạng thái: Đang chờ xác nhận</string>
+    <string name="detail_status_settled">Trạng thái: Đã tất toán</string>
+    <string name="detail_status_rejected">Trạng thái: Đã bị từ chối</string>
+    <string name="default_receiver_name">Người nhận</string>
+
+    <!-- Thông báo Toasts -->
+    <string name="toast_payment_accepted">Đã xác nhận thanh toán!</string>
+    <string name="toast_payment_rejected">Đã từ chối thanh toán!</string>
+
+    <!-- Hệ thống thông báo (Notifications) -->
+    <string name="notif_title_payment_accepted">Thanh toán được xác nhận</string>
+    <string name="notif_title_payment_rejected">Thanh toán bị từ chối</string>
+    <!-- Giao diện Tất toán / Thanh toán -->
+    <string name="title_settle_up">Thanh toán</string>
+    <string name="toast_missing_amount">Vui lòng nhập số tiền</string>
+    <string name="toast_settle_users_duplicate">Người gửi và nhận không được trùng nhau</string>
+    <string name="toast_image_processing_error">Lỗi xử lý ảnh</string>
+    <string name="toast_settle_request_sent">Đã gửi yêu cầu thanh toán, chờ xác nhận!</string>
+    <string name="toast_firestore_save_error">Lỗi lưu dữ liệu</string>
+
+    <!-- Hệ thống thông báo (Notifications) -->
+    <string name="notif_title_new_payment_request">Yêu cầu thanh toán mới</string>
+
+    <!-- Định dạng cấu trúc chuỗi động -->
+    <string name="settle_description_format">Thanh toán: %1$s → %2$s</string>
+    <string name="notif_content_payment_request_format">%1$s đã gửi xác nhận thanh toán %2$d VND. Vui lòng xác nhận.</string>
+    <!-- Định dạng chuỗi động -->
+    <string name="currency_vnd_format">%,.0f VND</string>
+    <string name="detail_sender_format">Người gửi: %1$s</string>
+    <string name="notif_content_payment_accepted_format">%1$s đã xác nhận khoản thanh toán %2$d VND của bạn.</string>
+    <string name="notif_content_payment_rejected_format">%1$s đã từ chối khoản thanh toán %2$d VND của bạn.</string>
+    <!-- Định dạng chuỗi động -->
+    <string name="toast_register_failed_prefix">Đăng ký thất bại: %1$s</string>
+    <string name="toast_firestore_save_error_prefix">Lỗi lưu dữ liệu: %1$s</string>
+    <!-- Định dạng chuỗi động -->
+    <string name="toast_login_failed_prefix">Đăng nhập thất bại: %1$s</string>
+    <!-- Các định dạng chuỗi động (String Formats) -->
+    <string name="toast_added_member_success_format">Đã thêm %1$s</string>
+    <string name="dialog_share_join_code_msg_format">Chia sẻ mã này cho bạn bè: %1$s</string>
+    <string name="dialog_remove_member_msg_format">Xóa %1$s khỏi nhóm?</string>
+    <string name="dialog_transfer_admin_msg_format">Bạn có chắc chắn muốn nhượng quyền Trưởng nhóm cho %1$s không?\n(Sau khi nhượng quyền, bạn sẽ trở thành Thành viên thông thường)</string>
 </resources>

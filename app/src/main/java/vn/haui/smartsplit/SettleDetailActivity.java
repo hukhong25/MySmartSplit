@@ -10,10 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -47,7 +45,7 @@ public class SettleDetailActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.toolbarSettleDetail);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Chi tiết giao dịch");
+            getSupportActionBar().setTitle(getString(R.string.title_transaction_detail));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -77,18 +75,18 @@ public class SettleDetailActivity extends BaseActivity {
 
     private void displayDetail() {
         tvDetailDescription.setText(currentExpense.getDescription());
-        tvDetailPayer.setText("Người gửi: " + currentExpense.getPayerName());
-        tvDetailAmount.setText(String.format(Locale.getDefault(), "%,.0f VND", currentExpense.getAmount()));
-        
+        tvDetailPayer.setText(getString(R.string.detail_sender_format, currentExpense.getPayerName()));
+        tvDetailAmount.setText(getString(R.string.currency_vnd_format, currentExpense.getAmount()));
+
         String status = currentExpense.getStatus();
         if (Expense.STATUS_PENDING.equals(status)) {
-            tvDetailStatus.setText("Trạng thái: Đang chờ xác nhận");
+            tvDetailStatus.setText(getString(R.string.detail_status_pending));
             tvDetailStatus.setTextColor(android.graphics.Color.parseColor("#FFA500"));
         } else if (Expense.STATUS_COMPLETED.equals(status)) {
-            tvDetailStatus.setText("Trạng thái: Đã tất toán");
+            tvDetailStatus.setText(getString(R.string.detail_status_settled));
             tvDetailStatus.setTextColor(android.graphics.Color.parseColor("#2E7D32"));
         } else {
-            tvDetailStatus.setText("Trạng thái: Đã bị từ chối");
+            tvDetailStatus.setText(getString(R.string.detail_status_rejected));
             tvDetailStatus.setTextColor(android.graphics.Color.RED);
         }
 
@@ -118,7 +116,9 @@ public class SettleDetailActivity extends BaseActivity {
                 .update("status", newStatus)
                 .addOnSuccessListener(aVoid -> {
                     createResponseNotification(newStatus);
-                    String msg = newStatus.equals(Expense.STATUS_COMPLETED) ? "Đã xác nhận thanh toán!" : "Đã từ chối thanh toán!";
+                    String msg = newStatus.equals(Expense.STATUS_COMPLETED)
+                            ? getString(R.string.toast_payment_accepted)
+                            : getString(R.string.toast_payment_rejected);
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     finish();
                 });
@@ -128,10 +128,19 @@ public class SettleDetailActivity extends BaseActivity {
         if (currentExpense == null) return;
         String senderId = currentExpense.getPayerId();
         String receiverName = mAuth.getCurrentUser().getDisplayName();
-        if (receiverName == null || receiverName.isEmpty()) receiverName = "Người nhận";
+        if (receiverName == null || receiverName.isEmpty()) {
+            receiverName = getString(R.string.default_receiver_name);
+        }
 
-        String title = status.equals(Expense.STATUS_COMPLETED) ? "Thanh toán được xác nhận" : "Thanh toán bị từ chối";
-        String content = receiverName + (status.equals(Expense.STATUS_COMPLETED) ? " đã xác nhận" : " đã từ chối") + " khoản thanh toán " + (long)currentExpense.getAmount() + " VND của bạn.";
+        String title = status.equals(Expense.STATUS_COMPLETED)
+                ? getString(R.string.notif_title_payment_accepted)
+                : getString(R.string.notif_title_payment_rejected);
+
+        String contentFormat = status.equals(Expense.STATUS_COMPLETED)
+                ? getString(R.string.notif_content_payment_accepted_format)
+                : getString(R.string.notif_content_payment_rejected_format);
+
+        String content = String.format(contentFormat, receiverName, (long) currentExpense.getAmount());
 
         String notifId = db.collection("notifications").document().getId();
         AppNotification notif = new AppNotification(

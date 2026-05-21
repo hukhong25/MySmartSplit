@@ -53,66 +53,71 @@ public class GroupExpenseAdapter extends RecyclerView.Adapter<GroupExpenseAdapte
     @Override
     public void onBindViewHolder(@NonNull ExpenseViewHolder holder, int position) {
         Expense expense = expenseList.get(position);
+        android.content.Context ctx = holder.itemView.getContext();
 
         holder.tvDescription.setText(expense.getDescription());
-        holder.tvAmount.setText(String.format(Locale.getDefault(), "%,.0f VND", expense.getAmount()));
+        holder.tvAmount.setText(ctx.getString(R.string.currency_vnd_format, expense.getAmount()));
 
         String payerName = expense.getPayerName();
-        if (payerName == null || payerName.isEmpty()) payerName = "Không rõ";
+        if (payerName == null || payerName.isEmpty()) {
+            payerName = ctx.getString(R.string.status_unknown);
+        }
         String dateStr = DATE_FORMAT.format(new Date(expense.getTimestamp()));
-        
+
         String statusSuffix = "";
         if (expense.isSettlement()) {
             if (Expense.STATUS_PENDING.equals(expense.getStatus())) {
-                statusSuffix = " (Chờ xác nhận)";
-                holder.tvAmount.setTextColor(Color.parseColor("#FFA500")); 
+                statusSuffix = ctx.getString(R.string.status_pending_suffix);
+                holder.tvAmount.setTextColor(Color.parseColor("#FFA500"));
             } else if (Expense.STATUS_REJECTED.equals(expense.getStatus())) {
-                statusSuffix = " (Bị từ chối)";
+                statusSuffix = ctx.getString(R.string.status_rejected_suffix);
                 holder.tvAmount.setTextColor(Color.RED);
             } else {
-                holder.tvAmount.setTextColor(Color.parseColor("#2E7D32")); 
+                holder.tvAmount.setTextColor(Color.parseColor("#2E7D32"));
             }
             holder.tvShare.setVisibility(View.GONE);
-            // KHÔNG cho phép sửa/xóa khoản thanh toán
             holder.btnOptions.setVisibility(View.GONE);
         } else {
-            holder.tvAmount.setTextColor(Color.parseColor("#E91E63")); 
+            holder.tvAmount.setTextColor(Color.parseColor("#E91E63"));
             holder.btnOptions.setVisibility(View.VISIBLE);
-            
             holder.tvShare.setVisibility(View.VISIBLE);
+
             Map<String, Double> split = expense.getSplitDetails();
             boolean isPayer = currentUserId != null && currentUserId.equals(expense.getPayerId());
-            
+
             if (isPayer) {
                 double myShare = (split != null && split.containsKey(currentUserId)) ? split.get(currentUserId) : 0;
                 double othersOwe = expense.getAmount() - myShare;
-                holder.tvShare.setText(String.format(Locale.getDefault(), "Bạn cho mượn: %,.0f VND", othersOwe));
+                holder.tvShare.setText(ctx.getString(R.string.expense_lend_format, othersOwe));
                 holder.tvShare.setTextColor(Color.parseColor("#2E7D32"));
             } else if (split != null && split.containsKey(currentUserId)) {
                 double myDebt = split.get(currentUserId);
-                holder.tvShare.setText(String.format(Locale.getDefault(), "Bạn nợ: %,.0f VND", myDebt));
+                holder.tvShare.setText(ctx.getString(R.string.expense_owe_format, myDebt));
                 holder.tvShare.setTextColor(Color.parseColor("#E91E63"));
             } else {
-                holder.tvShare.setText("Bạn không tham gia");
+                holder.tvShare.setText(ctx.getString(R.string.expense_not_involved));
                 holder.tvShare.setTextColor(Color.GRAY);
             }
         }
 
-        holder.tvNote.setText("Trả bởi: " + payerName + "  •  " + dateStr + statusSuffix);
-        
+        holder.tvNote.setText(ctx.getString(R.string.expense_note_format, payerName, dateStr, statusSuffix));
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onExpenseClick(expense);
         });
 
         holder.btnOptions.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
-            popup.getMenu().add("Chỉnh sửa");
-            popup.getMenu().add("Xóa");
+            String menuEdit = ctx.getString(R.string.menu_edit);
+            String menuDelete = ctx.getString(R.string.menu_delete);
+
+            popup.getMenu().add(menuEdit);
+            popup.getMenu().add(menuDelete);
             popup.setOnMenuItemClickListener(item -> {
-                String title = item.getTitle().toString();
-                if ("Chỉnh sửa".equals(title)) {
+                CharSequence title = item.getTitle();
+                if (menuEdit.equals(title)) {
                     if (listener != null) listener.onExpenseEdit(expense);
-                } else if ("Xóa".equals(title)) {
+                } else if (menuDelete.equals(title)) {
                     if (listener != null) listener.onExpenseDelete(expense);
                 }
                 return true;

@@ -119,7 +119,7 @@ public class GroupsFragment extends Fragment {
     private void updateGroupCount() {
         if (tvGroupCount != null) {
             int count = groupList.size();
-            tvGroupCount.setText(count + " nhóm");
+            tvGroupCount.setText(getString(R.string.group_count_format, count));
         }
     }
 
@@ -134,16 +134,18 @@ public class GroupsFragment extends Fragment {
 
     private void showJoinGroupDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Nhập mã tham gia");
+        builder.setTitle(getString(R.string.dialog_join_group_title));
+
         final EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        input.setHint("Ví dụ: ABC123");
+        input.setHint(getString(R.string.dialog_join_group_hint));
         builder.setView(input);
-        builder.setPositiveButton("Tham gia", (dialog, which) -> {
+
+        builder.setPositiveButton(getString(R.string.dialog_action_join), (dialog, which) -> {
             String code = input.getText().toString().trim().toUpperCase();
             if (!code.isEmpty()) joinGroupWithCode(code);
         });
-        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());
+        builder.setNegativeButton(getString(R.string.dialog_action_cancel), (dialog, which) -> dialog.cancel());
         builder.show();
     }
 
@@ -157,12 +159,12 @@ public class GroupsFragment extends Fragment {
                         db.collection("groups").document(groupId)
                                 .update("memberIds", FieldValue.arrayUnion(uid))
                                 .addOnSuccessListener(v -> Toast.makeText(requireContext(),
-                                        "Đã tham gia nhóm thành công!", Toast.LENGTH_SHORT).show())
+                                        getString(R.string.toast_join_group_success), Toast.LENGTH_SHORT).show())
                                 .addOnFailureListener(e -> Toast.makeText(requireContext(),
-                                        "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                        getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
                     } else {
                         Toast.makeText(requireContext(),
-                                "Mã không hợp lệ", Toast.LENGTH_SHORT).show();
+                                getString(R.string.toast_join_code_invalid), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

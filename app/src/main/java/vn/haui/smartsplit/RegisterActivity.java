@@ -2,13 +2,11 @@ package vn.haui.smartsplit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.button.MaterialButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -47,17 +45,17 @@ public class RegisterActivity extends BaseActivity {
             String confirmPassword = etConfirmPassword.getText().toString().trim();
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_missing_info), Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (!password.equals(confirmPassword)) {
-                Toast.makeText(this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.error_password_mismatch), Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (password.length() < 6) {
-                Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.error_password_too_short), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -74,7 +72,7 @@ public class RegisterActivity extends BaseActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            // Cập nhật Display Name
+                            // Cập nhật Display Name công khai
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                                     .setDisplayName(name)
                                     .build();
@@ -86,7 +84,7 @@ public class RegisterActivity extends BaseActivity {
                         }
                     } else {
                         btnRegister.setEnabled(true);
-                        Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(),
+                        Toast.makeText(RegisterActivity.this, getString(R.string.toast_register_failed_prefix, task.getException().getMessage()),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -101,13 +99,13 @@ public class RegisterActivity extends BaseActivity {
         db.collection("users").document(userId)
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(RegisterActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.toast_register_success), Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(RegisterActivity.this, HomeContainerActivity.class));
                     finishAffinity();
                 })
                 .addOnFailureListener(e -> {
                     btnRegister.setEnabled(true);
-                    Toast.makeText(RegisterActivity.this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.toast_firestore_save_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
                 });
     }
 }

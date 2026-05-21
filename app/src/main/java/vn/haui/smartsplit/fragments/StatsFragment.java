@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import vn.haui.smartsplit.R;
@@ -49,9 +50,9 @@ public class StatsFragment extends Fragment {
             Color.parseColor("#F59E0B"),  // Entertainment
             Color.parseColor("#9CA3AF")   // Other
     };
-    private static final String[] CAT_LABELS = {
-            "Ăn uống", "Di chuyển", "Mua sắm", "Giải trí", "Khác"
-    };
+
+    // Khởi tạo danh sách nhãn danh mục trống, sẽ được gán từ Resources khi Fragment sẵn sàng
+    private String[] catLabels;
 
     @Nullable
     @Override
@@ -67,6 +68,15 @@ public class StatsFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
+        // Đọc mảng nhãn danh mục từ tài nguyên ngôn ngữ hệ thống
+        catLabels = new String[]{
+                getString(R.string.cat_food),
+                getString(R.string.cat_travel),
+                getString(R.string.cat_shopping),
+                getString(R.string.cat_entertainment),
+                getString(R.string.cat_other)
+        };
 
         donutChartView      = view.findViewById(R.id.donutChartView);
         layoutCategories    = view.findViewById(R.id.layoutCategories);
@@ -96,7 +106,7 @@ public class StatsFragment extends Fragment {
                 .addSnapshotListener((value, error) -> {
                     if (error != null || value == null || !isAdded()) return;
 
-                    double[] catTotals = new double[CAT_LABELS.length];
+                    double[] catTotals = new double[catLabels.length];
                     double totalThisMonth = 0;
                     double totalLastMonth = 0;
 
@@ -105,7 +115,6 @@ public class StatsFragment extends Fragment {
                     int thisYear  = now.get(Calendar.YEAR);
 
                     for (QueryDocumentSnapshot doc : value) {
-                        // 1. Chỉ tính các khoản chi tiêu đã hoàn thành và KHÔNG phải là thanh toán nợ (settlement)
                         String status = doc.getString("status");
                         if (!Expense.STATUS_COMPLETED.equals(status)) continue;
 
@@ -116,7 +125,6 @@ public class StatsFragment extends Fragment {
                         Map<String, Object> splitDetails = (Map<String, Object>) doc.get("splitDetails");
                         if (splitDetails == null || !splitDetails.containsKey(uid)) continue;
 
-                        // 2. Chi tiêu của tôi = số tiền tôi phải chịu trong khoản chi đó
                         double userShare = 0;
                         try {
                             userShare = Double.parseDouble(splitDetails.get(uid).toString());
@@ -124,17 +132,15 @@ public class StatsFragment extends Fragment {
 
                         if (userShare <= 0) continue;
 
-                        // 3. Lấy timestamp (kiểu Long)
                         Long timestamp = doc.getLong("timestamp");
                         if (timestamp == null) continue;
-                        
+
                         Calendar expCal = Calendar.getInstance();
                         expCal.setTimeInMillis(timestamp);
 
                         int expMonth = expCal.get(Calendar.MONTH);
                         int expYear  = expCal.get(Calendar.YEAR);
 
-                        // Filter by period
                         boolean inPeriod = false;
                         if (selectedPeriod == 0) { // week
                             long diffMs = now.getTimeInMillis() - expCal.getTimeInMillis();
@@ -145,7 +151,6 @@ public class StatsFragment extends Fragment {
                             inPeriod = (expYear == thisYear);
                         }
 
-                        // Monthly comparison
                         if (expMonth == thisMonth && expYear == thisYear) {
                             totalThisMonth += userShare;
                         }
@@ -157,7 +162,6 @@ public class StatsFragment extends Fragment {
 
                         if (!inPeriod) continue;
 
-                        // Categorize by description keywords
                         String desc = doc.getString("description");
                         if (desc == null) desc = "";
                         desc = desc.toLowerCase();
@@ -194,21 +198,21 @@ public class StatsFragment extends Fragment {
 
         // Build donut segments
         List<DonutChartView.Segment> segments = new ArrayList<>();
-        for (int i = 0; i < CAT_LABELS.length; i++) {
+        for (int i = 0; i < catLabels.length; i++) {
             if (catTotals[i] > 0) {
-                segments.add(new DonutChartView.Segment(CAT_LABELS[i], (float) catTotals[i], CAT_COLORS[i]));
+                segments.add(new DonutChartView.Segment(catLabels[i], (float) catTotals[i], CAT_COLORS[i]));
             }
         }
 
-        String centerValue = "₫" + formatShort(total);
-        donutChartView.setData(segments, "Tổng chi tiêu", centerValue);
+        String centerValue = getString(R.string.currency_short_prefix, formatShort(total));
+        donutChartView.setData(segments, getString(R.string.donut_center_title), centerValue);
 
         // Category rows
         layoutCategories.removeAllViews();
-        for (int i = 0; i < CAT_LABELS.length; i++) {
+        for (int i = 0; i < catLabels.length; i++) {
             if (catTotals[i] == 0) continue;
             int pct = total > 0 ? (int) Math.round(catTotals[i] / total * 100) : 0;
-            layoutCategories.addView(buildCategoryRow(CAT_LABELS[i], pct, catTotals[i], CAT_COLORS[i], fmt));
+            layoutCategories.addView(buildCategoryRow(catLabels[i], pct, catTotals[i], CAT_COLORS[i], fmt));
         }
 
         // Monthly trend
@@ -217,18 +221,18 @@ public class StatsFragment extends Fragment {
         String arrow = diff <= 0 ? "↓" : "↑";
         int trendColor = diff <= 0
                 ? Color.parseColor("#1CC29F") : Color.parseColor("#E53935");
-        String pctStr = arrow + " " + (int) Math.abs(diff) + "%";
-        tvTrendPercent.setText(pctStr);
+
+        tvTrendPercent.setText(getString(R.string.trend_percent_format, arrow, (int) Math.abs(diff)));
         tvTrendPercent.setTextColor(trendColor);
 
         if (diff <= 0) {
-            tvTrendDesc.setText("Bạn đã chi tiêu ít hơn " + (int) Math.abs(diff) + "% so với tháng trước.");
+            tvTrendDesc.setText(getString(R.string.trend_desc_less_format, (int) Math.abs(diff)));
         } else {
-            tvTrendDesc.setText("Bạn đã chi tiêu nhiều hơn " + (int) Math.abs(diff) + "% so với tháng trước.");
+            tvTrendDesc.setText(getString(R.string.trend_desc_more_format, (int) Math.abs(diff)));
         }
 
-        tvBarLastMonthAmount.setText("₫" + formatShort(totalLastMonth));
-        tvBarThisMonthAmount.setText("₫" + formatShort(totalThisMonth));
+        tvBarLastMonthAmount.setText(getString(R.string.currency_short_prefix, formatShort(totalLastMonth)));
+        tvBarThisMonthAmount.setText(getString(R.string.currency_short_prefix, formatShort(totalThisMonth)));
     }
 
     private View buildCategoryRow(String label, int pct, double amount, int color, DecimalFormat fmt) {
@@ -264,7 +268,7 @@ public class StatsFragment extends Fragment {
         textCol.addView(tvLabel);
 
         TextView tvPct = new TextView(requireContext());
-        tvPct.setText(pct + "%");
+        tvPct.setText(getString(R.string.percent_format, pct));
         tvPct.setTextSize(12);
         tvPct.setTextColor(resolveColor(android.R.attr.textColorSecondary));
         textCol.addView(tvPct);
@@ -273,7 +277,7 @@ public class StatsFragment extends Fragment {
 
         // Amount
         TextView tvAmt = new TextView(requireContext());
-        tvAmt.setText("₫" + fmt.format(amount));
+        tvAmt.setText(getString(R.string.currency_prefix_format, fmt.format(amount)));
         tvAmt.setTextSize(14);
         tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
         tvAmt.setTextColor(resolveColor(android.R.attr.textColorPrimary));
@@ -300,8 +304,8 @@ public class StatsFragment extends Fragment {
     }
 
     private String formatShort(double value) {
-        if (value >= 1_000_000) return String.format("%.1fM", value / 1_000_000);
-        if (value >= 1_000)     return String.format("%.0fk", value / 1_000);
+        if (value >= 1_000_000) return String.format(Locale.US, "%.1fM", value / 1_000_000);
+        if (value >= 1_000)     return String.format(Locale.US, "%.0fk", value / 1_000);
         return String.valueOf((long) value);
     }
 }

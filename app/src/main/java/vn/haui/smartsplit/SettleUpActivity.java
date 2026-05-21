@@ -16,20 +16,17 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import vn.haui.smartsplit.models.AppNotification;
@@ -75,7 +72,7 @@ public class SettleUpActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.toolbarSettleUp);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Thanh toán");
+            getSupportActionBar().setTitle(getString(R.string.title_settle_up));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -99,6 +96,7 @@ public class SettleUpActivity extends BaseActivity {
     private void loadGroupMembers() {
         if (groupId == null) return;
         db.collection("groups").document(groupId).get().addOnSuccessListener(doc -> {
+            @SuppressWarnings("unchecked")
             List<String> memberIds = (List<String>) doc.get("memberIds");
             if (memberIds == null) return;
             AtomicInteger count = new AtomicInteger(0);
@@ -151,7 +149,7 @@ public class SettleUpActivity extends BaseActivity {
     private void confirmSettle() {
         String amountStr = etSettleAmount.getText().toString().trim();
         if (amountStr.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập số tiền", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_missing_amount), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -162,17 +160,16 @@ public class SettleUpActivity extends BaseActivity {
         User to = memberList.get(spToUser.getSelectedItemPosition());
 
         if (from.getUid().equals(to.getUid())) {
-            Toast.makeText(this, "Người gửi và nhận không được trùng nhau", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_settle_users_duplicate), Toast.LENGTH_SHORT).show();
             return;
         }
 
         btnConfirmSettle.setEnabled(false);
         if (imageUri != null) {
-            // Convert to Base64 (max 600px for receipt image details)
             String base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), imageUri, 600);
             if (base64Image == null) {
                 btnConfirmSettle.setEnabled(true);
-                Toast.makeText(this, "Lỗi xử lý ảnh", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_image_processing_error), Toast.LENGTH_SHORT).show();
                 return;
             }
             saveSettlement(from, to, amount, base64Image);
@@ -188,7 +185,7 @@ public class SettleUpActivity extends BaseActivity {
         String id = db.collection("expenses").document().getId();
         Expense settlement = new Expense();
         settlement.setId(id);
-        settlement.setDescription("Thanh toán: " + from.getName() + " → " + to.getName());
+        settlement.setDescription(getString(R.string.settle_description_format, from.getName(), to.getName()));
         settlement.setAmount(amount);
         settlement.setPayerId(from.getUid());
         settlement.setPayerName(from.getName());
@@ -201,21 +198,24 @@ public class SettleUpActivity extends BaseActivity {
 
         db.collection("expenses").document(id).set(settlement).addOnSuccessListener(aVoid -> {
             sendNotification(to.getUid(), from.getName(), amount, id);
-            Toast.makeText(this, "Đã gửi yêu cầu thanh toán, chờ xác nhận!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_settle_request_sent), Toast.LENGTH_SHORT).show();
             finish();
         }).addOnFailureListener(e -> {
             btnConfirmSettle.setEnabled(true);
-            Toast.makeText(this, "Lỗi lưu dữ liệu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_firestore_save_error), Toast.LENGTH_SHORT).show();
         });
     }
 
     private void sendNotification(String receiverId, String senderName, double amount, String expenseId) {
+        String title = getString(R.string.notif_title_new_payment_request);
+        String content = getString(R.string.notif_content_payment_request_format, senderName, (long) amount);
+
         String notifId = db.collection("notifications").document().getId();
         AppNotification notif = new AppNotification(
                 notifId,
                 receiverId,
-                "Yêu cầu thanh toán mới",
-                senderName + " đã gửi xác nhận thanh toán " + (long)amount + " VND. Vui lòng xác nhận.",
+                title,
+                content,
                 "PAYMENT_REQUEST",
                 expenseId
         );

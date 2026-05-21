@@ -1,11 +1,10 @@
 <resources>
-        <!-- Add these lines to your English strings.xml -->
-        <string name="add_expense_title">Add Expense</string>
-        <string name="expense_desc_hint">Enter expense description</string>
-        <string name="amount_label">Amount</string>
-        <string name="payer_title">Payer</string>
-        <string name="split_with_label">Split with whom?</string>
-        <string name="save_invoice_btn">Save bill</string>
+    <string name="add_expense_title">Add Expense</string>
+    <string name="expense_desc_hint">Enter expense description</string>
+    <string name="amount_label">Amount</string>
+    <string name="payer_title">Payer</string>
+    <string name="split_with_label">Split with whom?</string>
+    <string name="save_invoice_btn">Save bill</string>
     <string name="add_transaction_title">Add Transaction</string>
     <string name="amount_hint">Amount</string>
     <string name="note_optional_hint">Note (optional)</string>
@@ -78,6 +77,22 @@
     <string name="plus_sign">+</string>
     <string name="create_group_label">Create group</string>
     <string name="create_new_group_desc">Create new group</string>
+    <string name="status_settled_up">Settled up</string>
+    <string name="status_unknown">Unknown</string>
+    <string name="status_pending_suffix"> (Pending)</string>
+    <string name="status_rejected_suffix"> (Rejected)</string>
+    <string name="expense_not_involved">You are not involved</string>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_delete">Delete</string>
+    <string name="role_admin">Group Admin</string>
+    <string name="role_member">Member</string>
+    <string name="default_initial_question_mark">?</string>
+    <string name="username_with_you_suffix">%1$s (You)</string>
+    <string name="currency_vnd_format">%,.0f VND</string>
+    <string name="expense_lend_format">You lent: %,.0f VND</string>
+    <string name="expense_owe_format">You owe: %,.0f VND</string>
+    <string name="expense_note_format">Paid by: %1$s  •  %2$s%3$s</string>
+    <string name="group_member_count_format">%1$d members</string>
     <string name="arrow_sign">→</string>
     <string name="join_group_label">Join</string>
     <string name="by_group_code_desc">Using group code</string>
@@ -120,11 +135,8 @@
     <string name="settle_up_btn_text">Settle up</string>
     <string name="remind_debt_btn_text">Remind</string>
     <string name="settled_up_status">Settled up</string>
-
-    <!-- Các chuỗi định dạng động (String Formats) -->
     <string name="transaction_direction_format">%1$s ➔ %2$s</string>
     <string name="transfer_amount_format">To transfer: ₫%1$s</string>
-    <string name="username_with_you_suffix">%1$s (You)</string>
     <string name="receive_amount_format">Owed: ₫%1$s</string>
     <string name="owe_amount_format">Owes: ₫%1$s</string>
     <string name="menu_dark_mode">Dark mode</string>
@@ -159,4 +171,174 @@
     <string name="default_notification_time">12:30 10/15/2023</string>
     <string name="transaction_icon_desc">Transaction icon</string>
     <string name="options_button_desc">Options</string>
+    <string name="dialog_join_group_title">Enter Join Code</string>
+    <string name="dialog_join_group_hint">Example: ABC123</string>
+    <string name="dialog_action_join">Join</string>
+    <string name="dialog_action_cancel">Cancel</string>
+    <string name="toast_join_group_success">Joined group successfully!</string>
+    <string name="toast_join_code_invalid">Invalid join code</string>
+    <string name="currency_with_unit_format">₫%1$s</string>
+    <string name="toast_error_prefix">Error: %1$s</string>
+    <string name="group_count_format">%1$d groups</string>
+    <string name="cat_food">Food &amp; Drinks</string>
+    <string name="cat_travel">Transport</string>
+    <string name="cat_shopping">Shopping</string>
+    <string name="cat_entertainment">Entertainment</string>
+    <string name="cat_other">Other</string>
+    <string name="donut_center_title">Total Spending</string>
+    <string name="currency_short_prefix">₫%1$s</string>
+    <string name="currency_prefix_format">₫%1$s</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="trend_percent_format">%1$s %2$d%%</string>
+    <string name="trend_desc_less_format">You spent %1$d%% less than last month.</string>
+    <string name="trend_desc_more_format">You spent %1$d%% more than last month.</string>
+    <string name="dialog_logout_title">Logout</string>
+    <string name="dialog_logout_message">Are you sure you want to log out?</string>
+    <string name="dialog_action_logout">Logout</string>
+    <string name="dialog_language_title">Chọn ngôn ngữ / Select Language</string>
+    <string name="dialog_language_cancel">Hủy / Cancel</string>
+    <string name="lang_vietnamese">Tiếng Việt</string>
+    <string name="lang_english">English</string>
+    <!-- Add/Edit Expense Group UI -->
+    <string name="title_add_expense">Add Expense</string>
+    <string name="title_edit_expense">Edit Expense</string>
+    <string name="btn_update">Update</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_missing_info">Please fill in all information</string>
+    <string name="toast_missing_split_members">Please select at least one member to split</string>
+    <string name="toast_add_expense_success">Expense added successfully</string>
+    <string name="toast_update_expense_success">Expense updated successfully</string>
+
+    <!-- Notifications System -->
+    <string name="notif_title_new_expense">New Expense</string>
+    <string name="notif_title_update_expense">Expense Updated</string>
+    <string name="notif_content_new_expense_format">%1$s added: %2$s (%3$d VND)</string>
+    <string name="notif_content_update_expense_format">%1$s updated: %2$s (%3$d VND)</string>
+
+    <!-- Transaction Form -->
+    <string name="toast_missing_amount">Please enter an amount</string>
+    <string name="toast_invalid_amount">Invalid amount entered</string>
+    <string name="toast_not_logged_in">You are not logged in</string>
+    <string name="toast_save_transaction_success">Transaction saved successfully!</string>
+
+    <!-- Dynamic String Formats -->
+    <string name="date_format">%1$d/%2$d/%3$d</string>
+    <string name="toast_save_transaction_error_prefix">Failed to save transaction: %1$s</string>
+    <string name="error_password_mismatch">Confirm password does not match</string>
+    <string name="error_password_too_short">Password must be at least 6 characters</string>
+    <string name="error_current_password_incorrect">Current password is incorrect</string>
+    <string name="toast_change_password_success">Password changed successfully</string>
+    <string name="toast_reauth_failed">Authentication failed</string>
+    <!-- Create Group -->
+    <string name="toast_cannot_edit_role_on_create">Cannot edit roles while creating a group</string>
+    <string name="toast_missing_group_name">Please enter a group name</string>
+    <string name="toast_missing_email">Please enter an email address</string>
+    <string name="toast_already_member">You are already a member of this group</string>
+    <string name="toast_user_already_in_list">This user is already in the list</string>
+    <string name="toast_user_email_not_found">No user found with this email</string>
+    <string name="toast_create_group_success">Group created successfully!</string>
+
+    <!-- Dynamic String Formats -->
+    <string name="toast_added_member_success">Added %1$s</string>
+    <!-- Dashboard Screen -->
+    <string name="dialog_group_options_title">Group Options</string>
+    <string name="dialog_option_create_group">Create new group</string>
+    <string name="dialog_option_join_with_code">Join with code</string>
+    <!-- Dynamic String Formats -->
+    <string name="dashboard_welcome_format">Hello, %1$s!</string>
+    <string name="toast_join_group_error_prefix">Failed to join: %1$s</string>
+    <!-- Edit Profile -->
+    <string name="error_empty_display_name">Display name cannot be empty</string>
+    <string name="toast_image_processing_error">Error processing image</string>
+    <string name="toast_update_profile_success">Profile updated successfully</string>
+
+    <!-- Dynamic String Formats -->
+    <string name="toast_profile_update_error_prefix">Profile update error: %1$s</string>
+    <string name="toast_firestore_save_error_prefix">Firestore save error: %1$s</string>
+    <!-- Group Details UI -->
+    <string name="toast_cannot_edit_settlement">Cannot edit settlement transaction</string>
+    <string name="toast_cannot_delete_settlement">Cannot delete settlement transaction</string>
+    <string name="dialog_confirm_delete_title">Confirm Delete</string>
+    <string name="dialog_confirm_delete_expense_msg">Are you sure you want to delete this expense?</string>
+    <string name="dialog_action_agree">Delete</string>
+    <string name="toast_delete_success">Deleted successfully</string>
+
+    <!-- Share & Debt Remind -->
+    <string name="share_chooser_title">Invite members via</string>
+    <string name="notif_title_debt_remind">Debt Reminder</string>
+
+    <!-- Dynamic String Formats -->
+    <string name="group_subtitle_code_prefix">Code: %1$s</string>
+    <string name="toast_remind_sent_success">Reminder sent to %1$s</string>
+    <string name="notif_content_debt_remind_format">%1$s reminded you to settle a debt of %2$d VND in group %3$s</string>
+    <string name="share_invite_msg_format">Join group \'%1$s\' on SmartSplit using code: %2$s</string>
+    <!-- Group Members Management -->
+    <string name="title_members">Members</string>
+    <string name="menu_dissolve_group">Dissolve Group</string>
+    <string name="btn_dissolve">Dissolve</string>
+    <string name="btn_remove">Remove</string>
+    <string name="hint_enter_gmail">Enter user\'s Gmail</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_join_code_title">Group Join Code</string>
+    <string name="dialog_add_member_title">Add Member</string>
+    <string name="dialog_transfer_admin_title">Transfer Admin Role</string>
+    <string name="dialog_remove_member_title">Remove Member</string>
+    <string name="dialog_action_ok">OK</string>
+    <string name="dialog_action_add">Add</string>
+    <string name="dialog_action_confirm_transfer">Confirm Transfer</string>
+    <string name="dialog_dissolve_group_msg">Are you sure you want to dissolve this group? The group will no longer be visible to anyone, but data will remain securely stored.</string>
+
+    <!-- Toast Notifications -->
+    <string name="toast_dissolve_group_success">Group dissolved successfully</string>
+    <string name="toast_user_not_found">User not found</string>
+    <string name="toast_user_already_in_group">User is already in this group</string>
+    <string name="toast_user_already_admin">This member is already the group admin</string>
+    <string name="toast_transfer_admin_success">Group Admin role transferred successfully</string>
+    <string name="toast_remove_member_success">Member removed from group successfully</string>
+    <string name="toast_permission_admin_edit_only">Only the Group Admin has permission to edit</string>
+    <string name="toast_permission_admin_remove_only">Only the Group Admin has permission to remove</string>
+    <!-- Login Screen -->
+    <string name="toast_login_success">Logged in successfully</string>
+    <string name="toast_register_success">Registered successfully</string>
+    <!-- Settlement Transaction Detail UI -->
+    <string name="title_transaction_detail">Transaction Details</string>
+    <string name="detail_status_pending">Status: Pending confirmation</string>
+    <string name="detail_status_settled">Status: Settled up</string>
+    <string name="detail_status_rejected">Status: Rejected</string>
+    <string name="default_receiver_name">Receiver</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_payment_accepted">Payment confirmed!</string>
+    <string name="toast_payment_rejected">Payment rejected!</string>
+
+    <!-- Notifications System -->
+    <string name="notif_title_payment_accepted">Payment Confirmed</string>
+    <string name="notif_title_payment_rejected">Payment Rejected</string>
+    <!-- Settle Up UI -->
+    <string name="title_settle_up">Settle Up</string>
+    <string name="toast_settle_users_duplicate">Sender and receiver cannot be the same person</string>
+    <string name="toast_settle_request_sent">Payment request sent, awaiting confirmation!</string>
+    <string name="toast_firestore_save_error">Failed to save data</string>
+
+    <!-- Notifications System -->
+    <string name="notif_title_new_payment_request">New Payment Request</string>
+
+    <!-- Dynamic String Formats -->
+    <string name="settle_description_format">Payment: %1$s → %2$s</string>
+    <string name="notif_content_payment_request_format">%1$s has sent a payment confirmation of %2$d VND. Please confirm.</string>
+    <!-- Dynamic String Formats -->
+    <string name="detail_sender_format">Sender: %1$s</string>
+    <string name="notif_content_payment_accepted_format">%1$s confirmed your payment of %2$d VND.</string>
+    <string name="notif_content_payment_rejected_format">%1$s rejected your payment of %2$d VND.</string>
+    <!-- Dynamic String Formats -->
+    <string name="toast_register_failed_prefix">Registration failed: %1$s</string>
+    <!-- Dynamic String Formats -->
+    <string name="toast_login_failed_prefix">Login failed: %1$s</string>
+    <!-- Dynamic String Formats -->
+    <string name="toast_added_member_success_format">Added %1$s</string>
+    <string name="dialog_share_join_code_msg_format">Share this code with friends: %1$s</string>
+    <string name="dialog_remove_member_msg_format">Remove %1$s from the group?</string>
+    <string name="dialog_transfer_admin_msg_format">Are you sure you want to transfer the Group Admin role to %1$s?\n(After transferring, you will become a regular member)</string>
 </resources>

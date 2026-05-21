@@ -9,11 +9,8 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,8 +18,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +31,7 @@ public class EditProfileActivity extends BaseActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
-    
+
     private Uri selectedImageUri;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
@@ -104,7 +99,7 @@ public class EditProfileActivity extends BaseActivity {
         String newName = etDisplayName.getText().toString().trim();
 
         if (newName.isEmpty()) {
-            etDisplayName.setError("Tên hiển thị không được để trống");
+            etDisplayName.setError(getString(R.string.error_empty_display_name));
             return;
         }
 
@@ -121,11 +116,10 @@ public class EditProfileActivity extends BaseActivity {
     }
 
     private void uploadImageAndSaveProfile(FirebaseUser user, String newName) {
-        // Convert selected image to compressed Base64 string (max 300px for avatar)
         String base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), selectedImageUri, 300);
         if (base64Image == null) {
             btnSave.setEnabled(true);
-            Toast.makeText(this, "Lỗi xử lý ảnh", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_image_processing_error), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -139,7 +133,7 @@ public class EditProfileActivity extends BaseActivity {
                         updateFirestoreProfile(user.getUid(), newName, base64Image);
                     } else {
                         btnSave.setEnabled(true);
-                        Toast.makeText(this, "Lỗi cập nhật profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.toast_profile_update_error_prefix, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -155,7 +149,7 @@ public class EditProfileActivity extends BaseActivity {
                         updateFirestoreProfile(user.getUid(), newName, null);
                     } else {
                         btnSave.setEnabled(true);
-                        Toast.makeText(this, "Lỗi cập nhật profile: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.toast_profile_update_error_prefix, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -170,13 +164,13 @@ public class EditProfileActivity extends BaseActivity {
         db.collection("users").document(uid)
                 .update(updates)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Cập nhật thông tin thành công", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.toast_update_profile_success), Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSave.setEnabled(true);
-                    Toast.makeText(this, "Lỗi lưu dữ liệu Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.toast_firestore_save_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
                 });
     }
 }

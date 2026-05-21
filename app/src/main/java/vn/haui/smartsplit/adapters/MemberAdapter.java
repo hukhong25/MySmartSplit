@@ -51,14 +51,25 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         User user = members.get(position);
         if (user == null) return;
 
+        android.content.Context ctx = holder.itemView.getContext();
         boolean targetIsAdmin = user.getUid().equals(adminId);
         boolean viewerIsAdmin = currentUserId.equals(adminId);
 
-        // Hiển thị thông tin tên và vai trò công khai
-        holder.tvName.setText(user.getUid().equals(currentUserId) ? user.getName() + " (Bạn)" : user.getName());
-        holder.tvRole.setText(targetIsAdmin ? "Trưởng nhóm" : "Thành viên");
+        // Hiển thị thông tin tên (Sử dụng string format động để đính kèm chữ "Bạn")
+        String displayName = user.getName();
+        if (user.getUid().equals(currentUserId)) {
+            holder.tvName.setText(ctx.getString(R.string.username_with_you_suffix, displayName));
+        } else {
+            holder.tvName.setText(displayName);
+        }
 
-        // Đổ màu nền ngẫu nhiên cho vòng tròn Avatar tinh tế hơn (Giữ logic bo góc của bạn)
+        // Hiển thị vai trò (Trưởng nhóm / Thành viên) từ tài nguyên đa ngôn ngữ
+        String roleText = targetIsAdmin
+                ? ctx.getString(R.string.role_admin)
+                : ctx.getString(R.string.role_member);
+        holder.tvRole.setText(roleText);
+
+        // Đổ màu nền ngẫu nhiên cho vòng tròn Avatar tinh tế hơn
         if (holder.viewAvatarBg.getBackground() instanceof GradientDrawable) {
             GradientDrawable drawable = (GradientDrawable) holder.viewAvatarBg.getBackground();
             drawable.setColor(COLORS[position % COLORS.length]);
@@ -66,7 +77,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             holder.viewAvatarBg.setBackgroundColor(COLORS[position % COLORS.length]);
         }
 
-        // Load avatar nếu có (Tích hợp tính năng Glide của người kia)
+        // Load avatar nếu có
         if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
             holder.ivAvatar.setVisibility(View.VISIBLE);
             holder.tvInitial.setVisibility(View.GONE);
@@ -80,10 +91,10 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
             String name = user.getName();
             holder.tvInitial.setText(name != null && !name.isEmpty()
-                    ? String.valueOf(name.charAt(0)).toUpperCase() : "?");
+                    ? String.valueOf(name.charAt(0)).toUpperCase()
+                    : ctx.getString(R.string.default_initial_question_mark));
         }
 
-        // LOGIC ẨN HIỆN CỤM NÚT SỬA / XÓA (Giữ logic phân quyền chặt chẽ của bạn)
         if (viewerIsAdmin && !targetIsAdmin) {
             holder.btnEdit.setVisibility(View.VISIBLE);
             holder.btnRemove.setVisibility(View.VISIBLE);
@@ -92,7 +103,6 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             holder.btnRemove.setVisibility(View.GONE);
         }
 
-        // BẮT SỰ KIỆN CLICK TRUYỀN NGƯỢC VỀ ACTIVITY (Giữ đầy đủ cả 2 nút)
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEditMember(user);
         });

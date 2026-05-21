@@ -76,7 +76,7 @@ public class DashboardFragment extends Fragment {
         if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
             tvWelcome.setText(user.getDisplayName());
         } else if (user != null) {
-            tvWelcome.setText("Người dùng");
+            tvWelcome.setText(R.string.default_username);
         }
 
         rvDashboardGroups.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -153,7 +153,6 @@ public class DashboardFragment extends Fragment {
                         Boolean isSettlement = doc.getBoolean("settlement");
                         if (isSettlement == null) isSettlement = false;
 
-                        // Logic: Chấp nhận COMPLETED cho tất cả, hoặc PENDING nếu là settlement (để cập nhật số dư tạm thời)
                         if (!Expense.STATUS_COMPLETED.equals(status)) {
                             if (!(isSettlement && Expense.STATUS_PENDING.equals(status))) {
                                 continue;
@@ -199,23 +198,25 @@ public class DashboardFragment extends Fragment {
                     }
 
                     DecimalFormat fmt = new DecimalFormat("#,###");
-                    tvTotalOwe.setText(fmt.format(totalOwe) + " VNĐ");
-                    tvTotalOwed.setText(fmt.format(totalOwed) + " VNĐ");
+                    tvTotalOwe.setText(getString(R.string.currency_with_unit_format, fmt.format(totalOwe)));
+                    tvTotalOwed.setText(getString(R.string.currency_with_unit_format, fmt.format(totalOwed)));
                 });
     }
 
     private void showJoinGroupDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Nhập mã tham gia");
+        builder.setTitle(getString(R.string.dialog_join_group_title));
+
         final EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        input.setHint("Ví dụ: ABC123");
+        input.setHint(getString(R.string.dialog_join_group_hint));
         builder.setView(input);
-        builder.setPositiveButton("Tham gia", (dialog, which) -> {
+
+        builder.setPositiveButton(getString(R.string.dialog_action_join), (dialog, which) -> {
             String code = input.getText().toString().trim().toUpperCase();
             if (!code.isEmpty()) joinGroupWithCode(code);
         });
-        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());
+        builder.setNegativeButton(getString(R.string.dialog_action_cancel), (dialog, which) -> dialog.cancel());
         builder.show();
     }
 
@@ -229,12 +230,12 @@ public class DashboardFragment extends Fragment {
                         db.collection("groups").document(groupId)
                                 .update("memberIds", FieldValue.arrayUnion(currentUserId))
                                 .addOnSuccessListener(v -> Toast.makeText(requireContext(),
-                                        "Đã tham gia nhóm thành công!", Toast.LENGTH_SHORT).show())
+                                        getString(R.string.toast_join_group_success), Toast.LENGTH_SHORT).show())
                                 .addOnFailureListener(e -> Toast.makeText(requireContext(),
-                                        "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                        getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
                     } else {
                         Toast.makeText(requireContext(),
-                                "Mã tham gia không hợp lệ", Toast.LENGTH_SHORT).show();
+                                getString(R.string.toast_join_code_invalid), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

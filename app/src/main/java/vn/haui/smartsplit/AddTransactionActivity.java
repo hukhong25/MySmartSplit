@@ -8,8 +8,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -40,18 +38,26 @@ public class AddTransactionActivity extends BaseActivity {
         etDate = findViewById(R.id.etDate);
         btnSave = findViewById(R.id.btnSave);
 
-        // Thiết lập Spinner danh mục
-        String[] categories = {"Ăn uống", "Di chuyển", "Mua sắm", "Giải trí", "Khác"};
+        // Đọc mảng danh mục trực tiếp từ tài nguyên ngôn ngữ hệ thống
+        String[] categories = {
+                getString(R.string.cat_food),
+                getString(R.string.cat_travel),
+                getString(R.string.cat_shopping),
+                getString(R.string.cat_entertainment),
+                getString(R.string.cat_other)
+        };
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, categories);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCategory.setAdapter(adapter);
 
-        // Hiển thị DatePicker khi chọn ngày
+        // Thiết lập DatePicker và định dạng ngày hiển thị mặc định
         Calendar calendar = Calendar.getInstance();
-        String today = calendar.get(Calendar.DAY_OF_MONTH) + "/" +
-                (calendar.get(Calendar.MONTH) + 1) + "/" +
-                calendar.get(Calendar.YEAR);
+        String today = getString(R.string.date_format,
+                calendar.get(Calendar.DAY_OF_MONTH),
+                (calendar.get(Calendar.MONTH) + 1),
+                calendar.get(Calendar.YEAR));
         etDate.setText(today);
 
         etDate.setOnClickListener(v -> {
@@ -60,7 +66,7 @@ public class AddTransactionActivity extends BaseActivity {
             int day = calendar.get(Calendar.DAY_OF_MONTH);
 
             new DatePickerDialog(this, (view, y, m, d) -> {
-                String date = d + "/" + (m + 1) + "/" + y;
+                String date = getString(R.string.date_format, d, (m + 1), y);
                 etDate.setText(date);
             }, year, month, day).show();
         });
@@ -75,7 +81,7 @@ public class AddTransactionActivity extends BaseActivity {
         String category = spCategory.getSelectedItem().toString();
 
         if (amountStr.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập số tiền", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_missing_amount), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -83,12 +89,12 @@ public class AddTransactionActivity extends BaseActivity {
         try {
             amount = Double.parseDouble(amountStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Số tiền không hợp lệ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_invalid_amount), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_not_logged_in), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -106,12 +112,12 @@ public class AddTransactionActivity extends BaseActivity {
         db.collection("transactions")
                 .add(transaction)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Đã lưu giao dịch thành công!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.toast_save_transaction_success), Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSave.setEnabled(true);
-                    Toast.makeText(this, "Lỗi lưu giao dịch: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.toast_save_transaction_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
                 });
     }
 }

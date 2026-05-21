@@ -11,6 +11,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+import vn.haui.smartsplit.R;
+
 /**
  * Custom View vẽ Donut Chart bằng Canvas (không dùng thư viện ngoài).
  * Sử dụng: gọi setData() với danh sách segments trước khi hiển thị.
@@ -38,8 +40,8 @@ public class DonutChartView extends View {
     private final Paint subTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rectF = new RectF();
 
-    private String centerLabel = "Tổng chi tiêu";
-    private String centerValue = "₫0";
+    private String centerLabel = String.valueOf(R.string.donut_center_title);
+    private String centerValue = String.valueOf(R.string.currency_short_prefix);
     private float strokeWidth = 0f;  // will be computed
 
     public DonutChartView(Context context) {

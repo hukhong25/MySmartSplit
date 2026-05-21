@@ -9,7 +9,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -52,7 +51,7 @@ public class AddGroupExpenseActivity extends BaseActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        
+
         groupId = getIntent().getStringExtra("GROUP_ID");
         expenseId = getIntent().getStringExtra("EXPENSE_ID");
         isEditMode = (expenseId != null);
@@ -60,7 +59,8 @@ public class AddGroupExpenseActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.toolbarAddExpense);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(isEditMode ? "Sửa khoản chi" : "Thêm khoản chi");
+            String title = isEditMode ? getString(R.string.title_edit_expense) : getString(R.string.title_add_expense);
+            getSupportActionBar().setTitle(title);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -71,7 +71,7 @@ public class AddGroupExpenseActivity extends BaseActivity {
         btnSaveGroupExpense = findViewById(R.id.btnSaveGroupExpense);
 
         if (isEditMode) {
-            btnSaveGroupExpense.setText("Cập nhật");
+            btnSaveGroupExpense.setText(getString(R.string.btn_update));
         }
 
         rvSplitMembers.setLayoutManager(new LinearLayoutManager(this));
@@ -86,6 +86,7 @@ public class AddGroupExpenseActivity extends BaseActivity {
 
         db.collection("groups").document(groupId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    @SuppressWarnings("unchecked")
                     List<String> memberIds = (List<String>) documentSnapshot.get("memberIds");
                     if (memberIds == null || memberIds.isEmpty()) return;
 
@@ -106,7 +107,6 @@ public class AddGroupExpenseActivity extends BaseActivity {
                                         if (isEditMode) {
                                             loadExpenseData();
                                         } else {
-                                            // Mặc định chọn tất cả nếu thêm mới
                                             selectedUserIds.addAll(memberIds);
                                             splitMemberAdapter.notifyDataSetChanged();
                                         }
@@ -128,7 +128,7 @@ public class AddGroupExpenseActivity extends BaseActivity {
                     if (expense != null) {
                         etExpenseDescription.setText(expense.getDescription());
                         etExpenseAmount.setText(String.valueOf((long)expense.getAmount()));
-                        
+
                         // Chọn người trả
                         for (int i = 0; i < memberList.size(); i++) {
                             if (memberList.get(i).getUid().equals(expense.getPayerId())) {
@@ -175,11 +175,11 @@ public class AddGroupExpenseActivity extends BaseActivity {
         String amountStr = etExpenseAmount.getText().toString().trim();
 
         if (desc.isEmpty() || amountStr.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_missing_info), Toast.LENGTH_SHORT).show();
             return;
         }
         if (selectedUserIds.isEmpty()) {
-            Toast.makeText(this, "Vui lòng chọn ít nhất một người chia", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_missing_split_members), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -198,22 +198,26 @@ public class AddGroupExpenseActivity extends BaseActivity {
         db.collection("expenses").document(id).set(expense)
                 .addOnSuccessListener(aVoid -> {
                     notifyInvolvedMembers(expense, isEditMode);
-                    Toast.makeText(this, isEditMode ? "Cập nhật khoản chi thành công" : "Thêm khoản chi thành công", Toast.LENGTH_SHORT).show();
+                    String msg = isEditMode ? getString(R.string.toast_update_expense_success) : getString(R.string.toast_add_expense_success);
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSaveGroupExpense.setEnabled(true);
-                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void notifyInvolvedMembers(Expense expense, boolean isUpdate) {
         String currentUid = mAuth.getUid();
-        String title = isUpdate ? "Cập nhật chi tiêu" : "Khoản chi mới";
-        String content = expense.getPayerName() + (isUpdate ? " đã cập nhật: " : " đã thêm: ") + expense.getDescription() + " (" + (long)expense.getAmount() + " VND)";
+        String title = isUpdate ? getString(R.string.notif_title_update_expense) : getString(R.string.notif_title_new_expense);
+
+        // Tạo chuỗi nội dung thông báo động từ string format đa ngôn ngữ
+        String contentFormat = isUpdate ? getString(R.string.notif_content_update_expense_format) : getString(R.string.notif_content_new_expense_format);
+        String content = String.format(contentFormat, expense.getPayerName(), expense.getDescription(), (long) expense.getAmount());
 
         for (String uid : expense.getSplitDetails().keySet()) {
-            if (uid.equals(currentUid)) continue; // Don't notify self
+            if (uid.equals(currentUid)) continue; // Không tự gửi thông báo cho chính mình
 
             String notifId = db.collection("notifications").document().getId();
             AppNotification notif = new AppNotification(

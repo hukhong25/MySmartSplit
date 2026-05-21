@@ -8,7 +8,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,7 +29,7 @@ public class GroupMembersActivity extends BaseActivity {
     private FirebaseFirestore db;
     private String groupId, currentUserId;
     private Group currentGroup;
-    private List<User> memberList = new ArrayList<>();
+    private final List<User> memberList = new ArrayList<>();
     private MemberAdapter adapter;
 
     @Override
@@ -46,7 +45,7 @@ public class GroupMembersActivity extends BaseActivity {
         toolbar.getTop();
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Thành viên");
+            getSupportActionBar().setTitle(getString(R.string.title_members));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -63,9 +62,9 @@ public class GroupMembersActivity extends BaseActivity {
                     showAddMemberByEmailDialog();
                 } else {
                     new AlertDialog.Builder(this)
-                            .setTitle("Mã tham gia nhóm")
-                            .setMessage("Chia sẻ mã này cho bạn bè: " + currentGroup.getJoinCode())
-                            .setPositiveButton("OK", null)
+                            .setTitle(getString(R.string.dialog_join_code_title))
+                            .setMessage(getString(R.string.dialog_share_join_code_msg_format, currentGroup.getJoinCode()))
+                            .setPositiveButton(getString(R.string.dialog_action_ok), null)
                             .show();
                 }
             }
@@ -74,9 +73,8 @@ public class GroupMembersActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Chỉ hiện nút giải tán nếu là admin
         if (currentGroup != null && currentUserId.equals(currentGroup.getAdminId())) {
-            MenuItem item = menu.add(Menu.NONE, 101, Menu.NONE, "Giải tán nhóm");
+            MenuItem item = menu.add(Menu.NONE, 101, Menu.NONE, getString(R.string.menu_dissolve_group));
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
         return super.onCreateOptionsMenu(menu);
@@ -96,10 +94,10 @@ public class GroupMembersActivity extends BaseActivity {
 
     private void confirmDissolveGroup() {
         new AlertDialog.Builder(this)
-                .setTitle("Giải tán nhóm")
-                .setMessage("Bạn có chắc chắn muốn giải tán nhóm này? Nhóm sẽ không còn hiển thị với bất kỳ ai nhưng dữ liệu vẫn được lưu trữ an toàn.")
-                .setPositiveButton("Giải tán", (dialog, which) -> dissolveGroup())
-                .setNegativeButton("Hủy", null)
+                .setTitle(getString(R.string.menu_dissolve_group))
+                .setMessage(getString(R.string.dialog_dissolve_group_msg))
+                .setPositiveButton(getString(R.string.btn_dissolve), (dialog, which) -> dissolveGroup())
+                .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
@@ -108,29 +106,29 @@ public class GroupMembersActivity extends BaseActivity {
         db.collection("groups").document(groupId)
                 .update("memberIds", new ArrayList<String>())
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Nhóm đã được giải tán thành công", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.toast_dissolve_group_success), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(this, HomeContainerActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
     }
 
     private void showAddMemberByEmailDialog() {
         final EditText etEmail = new EditText(this);
-        etEmail.setHint("Nhập gmail người dùng");
+        etEmail.setHint(getString(R.string.hint_enter_gmail));
         int padding = (int) (16 * getResources().getDisplayMetrics().density);
         etEmail.setPadding(padding, padding, padding, padding);
 
         new AlertDialog.Builder(this)
-                .setTitle("Thêm thành viên")
+                .setTitle(getString(R.string.dialog_add_member_title))
                 .setView(etEmail)
-                .setPositiveButton("Thêm", (dialog, which) -> {
+                .setPositiveButton(getString(R.string.dialog_action_add), (dialog, which) -> {
                     String email = etEmail.getText().toString().trim();
                     if (!email.isEmpty()) searchAndAddUser(email);
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
     }
 
@@ -143,19 +141,19 @@ public class GroupMembersActivity extends BaseActivity {
                             return;
                         }
                     } else {
-                        Toast.makeText(this, "Không tìm thấy người dùng", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.toast_user_not_found), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     private void addUserToGroup(String uid, String email) {
         if (currentGroup.getMemberIds().contains(uid)) {
-            Toast.makeText(this, "Người dùng đã ở trong nhóm", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_user_already_in_group), Toast.LENGTH_SHORT).show();
             return;
         }
         db.collection("groups").document(groupId)
                 .update("memberIds", FieldValue.arrayUnion(uid))
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Đã thêm " + email, Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_added_member_success_format, email), Toast.LENGTH_SHORT).show());
     }
 
     private void loadGroupAndMembers() {
@@ -163,7 +161,7 @@ public class GroupMembersActivity extends BaseActivity {
             if (snapshot != null && snapshot.exists()) {
                 currentGroup = snapshot.toObject(Group.class);
                 if (currentGroup != null) {
-                    invalidateOptionsMenu(); // Cập nhật lại menu để hiện nút giải tán
+                    invalidateOptionsMenu();
                     fetchMemberDetails(currentGroup.getMemberIds());
                 }
             }
@@ -180,7 +178,7 @@ public class GroupMembersActivity extends BaseActivity {
             db.collection("users").document(uid).get().addOnSuccessListener(doc -> {
                 User u = doc.toObject(User.class);
                 if (u != null) {
-                    u.setUid(doc.getId()); // Đảm bảo set UID phòng trường hợp model chưa có
+                    u.setUid(doc.getId());
                     memberList.add(u);
                     if (memberList.size() == ids.size()) updateUI();
                 }
@@ -189,14 +187,13 @@ public class GroupMembersActivity extends BaseActivity {
     }
 
     private void updateUI() {
-        // Cập nhật khởi tạo Adapter theo Interface OnMemberActionListener mới của bạn
         adapter = new MemberAdapter(memberList, currentGroup.getAdminId(), currentUserId, new MemberAdapter.OnMemberActionListener() {
             @Override
             public void onEditMember(User user) {
                 if (currentUserId.equals(currentGroup.getAdminId())) {
                     showEditMemberRoleDialog(user);
                 } else {
-                    Toast.makeText(GroupMembersActivity.this, "Chỉ trưởng nhóm mới có quyền chỉnh sửa", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupMembersActivity.this, getString(R.string.toast_permission_admin_edit_only), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -205,7 +202,7 @@ public class GroupMembersActivity extends BaseActivity {
                 if (currentUserId.equals(currentGroup.getAdminId())) {
                     confirmRemove(user);
                 } else {
-                    Toast.makeText(GroupMembersActivity.this, "Chỉ trưởng nhóm mới có quyền xóa", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupMembersActivity.this, getString(R.string.toast_permission_admin_remove_only), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -214,15 +211,15 @@ public class GroupMembersActivity extends BaseActivity {
 
     private void showEditMemberRoleDialog(User user) {
         if (user.getUid().equals(currentGroup.getAdminId())) {
-            Toast.makeText(this, "Thành viên này đã là trưởng nhóm rồi", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_user_already_admin), Toast.LENGTH_SHORT).show();
             return;
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Chuyển quyền Trưởng nhóm")
-                .setMessage("Bạn có chắc chắn muốn nhượng quyền Trưởng nhóm cho " + user.getName() + " không?\n(Sau khi nhượng quyền, bạn sẽ trở thành Thành viên thông thường)")
-                .setPositiveButton("Xác nhận chuyển", (dialog, which) -> transferAdminRole(user.getUid()))
-                .setNegativeButton("Hủy", null)
+                .setTitle(getString(R.string.dialog_transfer_admin_title))
+                .setMessage(getString(R.string.dialog_transfer_admin_msg_format, user.getName()))
+                .setPositiveButton(getString(R.string.dialog_action_confirm_transfer), (dialog, which) -> transferAdminRole(user.getUid()))
+                .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
     }
 
@@ -230,25 +227,25 @@ public class GroupMembersActivity extends BaseActivity {
         db.collection("groups").document(groupId)
                 .update("adminId", newAdminUid)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Đã thay đổi quyền Trưởng nhóm thành công", Toast.LENGTH_SHORT).show();
-                    invalidateOptionsMenu(); // Vẽ lại Toolbar Menu để ẩn nút giải tán
+                    Toast.makeText(this, getString(R.string.toast_transfer_admin_success), Toast.LENGTH_SHORT).show();
+                    invalidateOptionsMenu();
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
     }
 
     private void confirmRemove(User user) {
         new AlertDialog.Builder(this)
-                .setTitle("Xóa thành viên")
-                .setMessage("Xóa " + user.getName() + " khỏi nhóm?")
-                .setPositiveButton("Xóa", (dialog, which) -> removeMember(user.getUid()))
-                .setNegativeButton("Hủy", null)
+                .setTitle(getString(R.string.dialog_remove_member_title))
+                .setMessage(getString(R.string.dialog_remove_member_msg_format, user.getName()))
+                .setPositiveButton(getString(R.string.btn_remove), (dialog, which) -> removeMember(user.getUid()))
+                .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
     }
 
     private void removeMember(String uid) {
         db.collection("groups").document(groupId)
                 .update("memberIds", FieldValue.arrayRemove(uid))
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Đã xóa thành viên khỏi nhóm", Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_remove_member_success), Toast.LENGTH_SHORT).show());
     }
 
     @Override

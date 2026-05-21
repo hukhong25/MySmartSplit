@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,10 +55,10 @@ public class DashboardActivity extends BaseActivity {
         btnMainLogout = findViewById(R.id.btnMainLogout);
         rvDashboardGroups = findViewById(R.id.rvDashboardGroups);
 
-        // Hiển thị tên người dùng
+        // Hiển thị tên người dùng kèm format lời chào bản địa hóa
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null && user.getDisplayName() != null) {
-            tvWelcome.setText("Chào, " + user.getDisplayName() + "!");
+            tvWelcome.setText(getString(R.string.dashboard_welcome_format, user.getDisplayName()));
         }
 
         rvDashboardGroups.setLayoutManager(new LinearLayoutManager(this));
@@ -76,20 +75,17 @@ public class DashboardActivity extends BaseActivity {
             startActivity(new Intent(DashboardActivity.this, GroupsActivity.class));
         });
 
-        // Xử lý nút Đăng xuất
         btnMainLogout.setOnClickListener(v -> logoutUser());
 
         ExtendedFloatingActionButton fabDashboardAddGroup = findViewById(R.id.fabDashboardAddGroup);
-        fabDashboardAddGroup.setOnClickListener(v -> {
-            showAddOptionsDialog();
-        });
+        fabDashboardAddGroup.setOnClickListener(v -> showAddOptionsDialog());
 
         loadDashboardData();
     }
 
     private void loadDashboardData() {
         if (mAuth.getCurrentUser() == null) return;
-        
+
         String currentUserId = mAuth.getCurrentUser().getUid();
 
         // Load 3 nhóm gần nhất
@@ -107,41 +103,39 @@ public class DashboardActivity extends BaseActivity {
                     }
                     groupAdapter.notifyDataSetChanged();
                 });
-        
+
         // Tính toán tổng nợ và tổng được trả thực tế
         db.collectionGroup("expenses")
                 .addSnapshotListener((value, error) -> {
                     if (error != null || value == null) return;
 
-                    double totalOwe = 0;   // Bạn nợ người khác
-                    double totalOwed = 0;  // Người khác nợ bạn
+                    double totalOwe = 0;
+                    double totalOwed = 0;
 
                     for (QueryDocumentSnapshot doc : value) {
                         String status = doc.getString("status");
-                        // Chỉ tính các giao dịch đã hoàn thành hoặc mặc định là hoàn thành (cho các chi tiêu thường)
                         if (status != null && !status.equals(Expense.STATUS_COMPLETED)) continue;
 
                         String payerId = doc.getString("payerId");
+                        @SuppressWarnings("unchecked")
                         Map<String, Object> splitDetails = (Map<String, Object>) doc.get("splitDetails");
 
                         if (splitDetails == null) continue;
 
                         if (currentUserId.equals(payerId)) {
-                            // Bạn là người trả -> tính những người khác nợ bạn
                             for (Map.Entry<String, Object> entry : splitDetails.entrySet()) {
                                 if (!entry.getKey().equals(currentUserId)) {
                                     totalOwed += Double.parseDouble(entry.getValue().toString());
                                 }
                             }
                         } else if (splitDetails.containsKey(currentUserId)) {
-                            // Người khác trả -> bạn nợ họ phần của bạn
                             totalOwe += Double.parseDouble(splitDetails.get(currentUserId).toString());
                         }
                     }
 
                     java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
-                    tvTotalOwe.setText(formatter.format(totalOwe) + " VNĐ");
-                    tvTotalOwed.setText(formatter.format(totalOwed) + " VNĐ");
+                    tvTotalOwe.setText(getString(R.string.currency_with_unit_format, formatter.format(totalOwe)));
+                    tvTotalOwed.setText(getString(R.string.currency_with_unit_format, formatter.format(totalOwed)));
                 });
     }
 
@@ -169,9 +163,12 @@ public class DashboardActivity extends BaseActivity {
     }
 
     private void showAddOptionsDialog() {
-        String[] options = {"Tạo nhóm mới", "Tham gia bằng mã"};
+        String[] options = {
+                getString(R.string.dialog_option_create_group),
+                getString(R.string.dialog_option_join_with_code)
+        };
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Tùy chọn nhóm");
+        builder.setTitle(getString(R.string.dialog_group_options_title));
         builder.setItems(options, (dialog, which) -> {
             if (which == 0) {
                 startActivity(new Intent(DashboardActivity.this, CreateGroupActivity.class));
@@ -184,20 +181,20 @@ public class DashboardActivity extends BaseActivity {
 
     private void showJoinGroupDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Nhập mã tham gia");
+        builder.setTitle(getString(R.string.dialog_join_group_title));
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        input.setHint("Ví dụ: ABC123");
+        input.setHint(getString(R.string.dialog_join_group_hint));
         builder.setView(input);
 
-        builder.setPositiveButton("Tham gia", (dialog, which) -> {
+        builder.setPositiveButton(getString(R.string.dialog_action_join), (dialog, which) -> {
             String code = input.getText().toString().trim().toUpperCase();
             if (!code.isEmpty()) {
                 joinGroupWithCode(code);
             }
         });
-        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());
+        builder.setNegativeButton(getString(R.string.dialog_action_cancel), (dialog, which) -> dialog.cancel());
 
         builder.show();
     }
@@ -214,13 +211,13 @@ public class DashboardActivity extends BaseActivity {
                         db.collection("groups").document(groupId)
                                 .update("memberIds", FieldValue.arrayUnion(currentUserId))
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Đã tham gia nhóm thành công!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, getString(R.string.toast_join_group_success), Toast.LENGTH_SHORT).show();
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(this, "Lỗi khi tham gia: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, getString(R.string.toast_join_group_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
                                 });
                     } else {
-                        Toast.makeText(this, "Mã tham gia không hợp lệ", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.toast_join_code_invalid), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

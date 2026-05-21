@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -125,7 +124,7 @@ public class ProfileFragment extends Fragment {
             String name = user.getDisplayName();
             String email = user.getEmail();
 
-            tvProfileName.setText(name != null && !name.isEmpty() ? name : "Người dùng");
+            tvProfileName.setText(name != null && !name.isEmpty() ? name : getString(R.string.default_username));
             tvProfileEmail.setText(email != null ? email : "");
 
             db.collection("users").document(user.getUid()).get()
@@ -151,7 +150,7 @@ public class ProfileFragment extends Fragment {
                                 if (name != null && !name.isEmpty()) {
                                     tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
                                 } else {
-                                    tvAvatarInitial.setText("U");
+                                    tvAvatarInitial.setText(getString(R.string.default_profile_initial));
                                 }
                             }
                         }
@@ -163,7 +162,7 @@ public class ProfileFragment extends Fragment {
                         if (name != null && !name.isEmpty()) {
                             tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
                         } else {
-                            tvAvatarInitial.setText("U");
+                            tvAvatarInitial.setText(getString(R.string.default_profile_initial));
                         }
                     });
         }
@@ -171,10 +170,10 @@ public class ProfileFragment extends Fragment {
 
     private void showLogoutDialog() {
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Đăng xuất")
-                .setMessage("Bạn có chắc muốn đăng xuất?")
-                .setPositiveButton("Đăng xuất", (dialog, which) -> logoutUser())
-                .setNegativeButton("Hủy", null)
+                .setTitle(getString(R.string.dialog_logout_title))
+                .setMessage(getString(R.string.dialog_logout_message))
+                .setPositiveButton(getString(R.string.dialog_action_logout), (dialog, which) -> logoutUser())
+                .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
     }
 
@@ -186,11 +185,14 @@ public class ProfileFragment extends Fragment {
     }
 
     private void showLanguageDialog() {
-        String[] languages = {"Tiếng Việt", "English"};
+        String[] languages = {
+                getString(R.string.lang_vietnamese),
+                getString(R.string.lang_english)
+        };
         int currentLangIndex = prefs.getInt("selected_language_index", 0);
 
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Chọn ngôn ngữ / Select Language")
+                .setTitle(getString(R.string.dialog_language_title))
                 .setSingleChoiceItems(languages, currentLangIndex, (dialog, which) -> {
                     prefs.edit().putInt("selected_language_index", which).apply();
 
@@ -201,7 +203,7 @@ public class ProfileFragment extends Fragment {
                     }
                     dialog.dismiss();
                 })
-                .setNegativeButton("Hủy / Cancel", null)
+                .setNegativeButton(getString(R.string.dialog_language_cancel), null)
                 .show();
     }
 
@@ -215,7 +217,6 @@ public class ProfileFragment extends Fragment {
         config.setLocale(locale);
         res.updateConfiguration(config, res.getDisplayMetrics());
 
-        // 👉 Ép vẽ lại Activity hiện tại chuẩn xác nhất
         if (getActivity() != null) {
             getActivity().recreate();
         }

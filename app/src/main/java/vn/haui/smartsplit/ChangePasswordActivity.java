@@ -3,7 +3,6 @@ package vn.haui.smartsplit;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.button.MaterialButton;
@@ -51,24 +50,24 @@ public class ChangePasswordActivity extends BaseActivity {
         String confirmPass = etConfirmNewPassword.getText().toString().trim();
 
         if (currentPass.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_missing_info), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!newPass.equals(confirmPass)) {
-            etConfirmNewPassword.setError("Mật khẩu xác nhận không khớp");
+            etConfirmNewPassword.setError(getString(R.string.error_password_mismatch));
             return;
         }
 
         if (newPass.length() < 6) {
-            etNewPassword.setError("Mật khẩu phải có ít nhất 6 ký tự");
+            etNewPassword.setError(getString(R.string.error_password_too_short));
             return;
         }
 
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null && user.getEmail() != null) {
             btnChangePassword.setEnabled(false);
-            
+
             // Re-authenticate user before updating password
             AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPass);
 
@@ -76,17 +75,17 @@ public class ChangePasswordActivity extends BaseActivity {
                 if (task.isSuccessful()) {
                     user.updatePassword(newPass).addOnCompleteListener(updateTask -> {
                         if (updateTask.isSuccessful()) {
-                            Toast.makeText(ChangePasswordActivity.this, "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChangePasswordActivity.this, getString(R.string.toast_change_password_success), Toast.LENGTH_SHORT).show();
                             finish();
                         } else {
                             btnChangePassword.setEnabled(true);
-                            Toast.makeText(ChangePasswordActivity.this, "Lỗi: " + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChangePasswordActivity.this, getString(R.string.toast_error_prefix, updateTask.getException().getMessage()), Toast.LENGTH_SHORT).show();
                         }
                     });
                 } else {
                     btnChangePassword.setEnabled(true);
-                    etCurrentPassword.setError("Mật khẩu hiện tại không chính xác");
-                    Toast.makeText(ChangePasswordActivity.this, "Xác thực thất bại", Toast.LENGTH_SHORT).show();
+                    etCurrentPassword.setError(getString(R.string.error_current_password_incorrect));
+                    Toast.makeText(ChangePasswordActivity.this, getString(R.string.toast_reauth_failed), Toast.LENGTH_SHORT).show();
                 }
             });
         }
