@@ -5,9 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import java.util.List;
 import vn.haui.smartsplit.R;
 import vn.haui.smartsplit.models.User;
@@ -52,9 +54,24 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
         holder.tvName.setText(user.getName());
         holder.tvRole.setText(targetIsAdmin ? "Trưởng nhóm" : "Thành viên");
-        holder.tvInitial.setText(user.getName() != null && !user.getName().isEmpty() 
-                ? String.valueOf(user.getName().charAt(0)).toUpperCase() : "?");
+        
+        String name = user.getName();
+        holder.tvInitial.setText(name != null && !name.isEmpty() 
+                ? String.valueOf(name.charAt(0)).toUpperCase() : "?");
         holder.viewAvatarBg.setBackgroundColor(COLORS[position % COLORS.length]);
+
+        // Load avatar if exists
+        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
+            holder.ivAvatar.setVisibility(View.VISIBLE);
+            holder.tvInitial.setVisibility(View.GONE);
+            Glide.with(holder.itemView.getContext())
+                    .load(user.getPhotoUrl())
+                    .circleCrop()
+                    .into(holder.ivAvatar);
+        } else {
+            holder.ivAvatar.setVisibility(View.GONE);
+            holder.tvInitial.setVisibility(View.VISIBLE);
+        }
 
         // Chỉ hiện nút xóa nếu người đang xem là Admin và không được tự xóa chính mình
         holder.btnRemove.setVisibility(viewerIsAdmin && !targetIsAdmin ? View.VISIBLE : View.GONE);
@@ -67,6 +84,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     static class MemberViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvRole, tvInitial;
         View viewAvatarBg;
+        ImageView ivAvatar;
         ImageButton btnRemove;
 
         public MemberViewHolder(@NonNull View itemView) {
@@ -75,6 +93,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             tvRole = itemView.findViewById(R.id.tvMemberRole);
             tvInitial = itemView.findViewById(R.id.tvAvatarInitial);
             viewAvatarBg = itemView.findViewById(R.id.viewAvatarBg);
+            ivAvatar = itemView.findViewById(R.id.ivMemberAvatar);
             btnRemove = itemView.findViewById(R.id.btnRemoveMember);
         }
     }

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import vn.haui.smartsplit.R;
+import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.views.DonutChartView;
 
 public class StatsFragment extends Fragment {
@@ -104,35 +105,31 @@ public class StatsFragment extends Fragment {
                     int thisYear  = now.get(Calendar.YEAR);
 
                     for (QueryDocumentSnapshot doc : value) {
-                        // Only expenses involving this user
-                        String payerId = doc.getString("payerId");
+                        // 1. Chỉ tính các khoản chi tiêu đã hoàn thành và KHÔNG phải là thanh toán nợ (settlement)
+                        String status = doc.getString("status");
+                        if (!Expense.STATUS_COMPLETED.equals(status)) continue;
+
+                        Boolean isSettlement = doc.getBoolean("settlement");
+                        if (isSettlement != null && isSettlement) continue;
+
                         @SuppressWarnings("unchecked")
-                        Map<String, Object> splitDetails =
-                                (Map<String, Object>) doc.get("splitDetails");
-                        if (splitDetails == null) continue;
+                        Map<String, Object> splitDetails = (Map<String, Object>) doc.get("splitDetails");
+                        if (splitDetails == null || !splitDetails.containsKey(uid)) continue;
 
+                        // 2. Chi tiêu của tôi = số tiền tôi phải chịu trong khoản chi đó
                         double userShare = 0;
-                        if (uid.equals(payerId)) {
-                            // User paid – count total
-                            Object amtObj = doc.get("amount");
-                            if (amtObj != null) {
-                                try { userShare = Double.parseDouble(amtObj.toString()); }
-                                catch (NumberFormatException ignored) {}
-                            }
-                        } else if (splitDetails.containsKey(uid)) {
-                            try {
-                                userShare = Double.parseDouble(
-                                        splitDetails.get(uid).toString());
-                            } catch (NumberFormatException ignored) {}
-                        }
+                        try {
+                            userShare = Double.parseDouble(splitDetails.get(uid).toString());
+                        } catch (Exception ignored) {}
 
-                        if (userShare == 0) continue;
+                        if (userShare <= 0) continue;
 
-                        // Get timestamp
-                        com.google.firebase.Timestamp ts = doc.getTimestamp("createdAt");
-                        if (ts == null) continue;
+                        // 3. Lấy timestamp (kiểu Long)
+                        Long timestamp = doc.getLong("timestamp");
+                        if (timestamp == null) continue;
+                        
                         Calendar expCal = Calendar.getInstance();
-                        expCal.setTime(ts.toDate());
+                        expCal.setTimeInMillis(timestamp);
 
                         int expMonth = expCal.get(Calendar.MONTH);
                         int expYear  = expCal.get(Calendar.YEAR);
@@ -148,7 +145,7 @@ public class StatsFragment extends Fragment {
                             inPeriod = (expYear == thisYear);
                         }
 
-                        // Monthly comparison (always compute)
+                        // Monthly comparison
                         if (expMonth == thisMonth && expYear == thisYear) {
                             totalThisMonth += userShare;
                         }
@@ -172,13 +169,13 @@ public class StatsFragment extends Fragment {
                             catIdx = 0;
                         } else if (desc.contains("xe") || desc.contains("grab") ||
                                 desc.contains("taxi") || desc.contains("vé") ||
-                                desc.contains("du lịch") || desc.contains("travel")) {
+                                desc.contains("du lịch") || desc.contains("travel") || desc.contains("xăng")) {
                             catIdx = 1;
                         } else if (desc.contains("mua") || desc.contains("shop") ||
-                                desc.contains("quần") || desc.contains("áo")) {
+                                desc.contains("quần") || desc.contains("áo") || desc.contains("mỹ phẩm")) {
                             catIdx = 2;
                         } else if (desc.contains("phim") || desc.contains("game") ||
-                                desc.contains("giải trí") || desc.contains("karaoke")) {
+                                desc.contains("giải trí") || desc.contains("karaoke") || desc.contains("vé xem")) {
                             catIdx = 3;
                         }
                         catTotals[catIdx] += userShare;
@@ -246,10 +243,8 @@ public class StatsFragment extends Fragment {
 
         // Color dot
         View dot = new View(requireContext());
-        LinearLayout.LayoutParams dotLp = new LinearLayout.LayoutParams(12, 12);
+        LinearLayout.LayoutParams dotLp = new LinearLayout.LayoutParams(24, 24);
         dot.setLayoutParams(dotLp);
-        dot.setBackgroundColor(color);
-        // Make circular
         dot.setBackground(createCircleDrawable(color));
         row.addView(dot);
 
@@ -278,7 +273,7 @@ public class StatsFragment extends Fragment {
 
         // Amount
         TextView tvAmt = new TextView(requireContext());
-        tvAmt.setText("₫" + fmt.format(amount / 1000) + "k");
+        tvAmt.setText("₫" + fmt.format(amount));
         tvAmt.setTextSize(14);
         tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
         tvAmt.setTextColor(resolveColor(android.R.attr.textColorPrimary));
@@ -299,7 +294,7 @@ public class StatsFragment extends Fragment {
         int[] attrs = { attr };
         android.content.res.TypedArray ta =
                 requireContext().obtainStyledAttributes(attrs);
-        int c = ta.getColor(0, Color.parseColor("#1A2420"));
+        int c = ta.getColor(0, Color.BLACK);
         ta.recycle();
         return c;
     }
