@@ -12,6 +12,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarGroupDetails"
             android:layout_width="match_parent"
+            android:paddingTop="25dp"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:title="Chi tiết nhóm"

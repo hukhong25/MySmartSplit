@@ -58,8 +58,6 @@ public class GroupDetailsActivity extends AppCompatActivity implements
 
         Toolbar toolbar = findViewById(R.id.toolbarGroupDetails);
         setSupportActionBar(toolbar);
-        toolbar.bringToFront();
-        toolbar.invalidate();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(groupName);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
