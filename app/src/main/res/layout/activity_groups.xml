@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:title="Nhóm của tôi"
+            app:title="@string/groups_list_title"
             app:titleTextColor="@android:color/white" />
 
         <LinearLayout
@@ -39,7 +39,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:iconifiedByDefault="false"
-                    android:queryHint="Tìm kiếm nhóm..."
+                    android:queryHint="@string/search_groups_hint"
                     android:background="@android:color/transparent" />
 
             </androidx.cardview.widget.CardView>
@@ -58,7 +58,7 @@
             android:id="@+id/tvEmptyGroups"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Không tìm thấy nhóm nào"
+            android:text="@string/no_groups_found_msg"
             android:textSize="15sp"
             android:textColor="#888888"
             android:gravity="center"

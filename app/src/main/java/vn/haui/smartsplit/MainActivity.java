@@ -11,7 +11,7 @@ import androidx.preference.PreferenceManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String PREF_DARK_MODE = "dark_mode_enabled";
 

@@ -31,7 +31,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Xin chào 👋"
+                    android:text="@string/hello_greeting"
                     android:textSize="13sp"
                     android:textColor="@color/textSecondary"/>
 
@@ -39,7 +39,7 @@
                     android:id="@+id/tvWelcome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Người dùng"
+                    android:text="@string/default_username"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="@color/textPrimary"/>
@@ -57,7 +57,8 @@
                     app:tint="@color/textSecondary"
                     android:background="@drawable/bg_card_surface"
                     android:clickable="true"
-                    android:focusable="true"/>
+                    android:focusable="true"
+                    android:contentDescription="@string/notification_icon_desc" />
                 <View
                     android:id="@+id/viewNotifBadge"
                     android:layout_width="8dp"
@@ -90,7 +91,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tổng quan số dư"
+                    android:text="@string/balance_overview_title"
                     android:textSize="13sp"
                     android:textColor="#B2FFFFFF"
                     android:layout_marginBottom="16dp"/>
@@ -111,7 +112,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bạn nợ"
+                            android:text="@string/you_owe_label"
                             android:textSize="12sp"
                             android:textColor="#CCFFFFFF"/>
 
@@ -119,7 +120,7 @@
                             android:id="@+id/tvTotalOwe"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
+                            android:text="@string/default_currency_zero"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:textColor="#FFCDD2"
@@ -143,7 +144,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Được nợ"
+                            android:text="@string/you_are_owed_short"
                             android:textSize="12sp"
                             android:textColor="#CCFFFFFF"/>
 
@@ -151,7 +152,7 @@
                             android:id="@+id/tvTotalOwed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
+                            android:text="@string/default_currency_zero"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:textColor="#C8E6C9"
@@ -174,7 +175,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Nhóm của bạn"
+                android:text="@string/your_groups_title"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary"/>
@@ -183,7 +184,7 @@
                 android:id="@+id/tvSeeAllGroups"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Xem tất cả"
+                android:text="@string/see_all_action"
                 android:textSize="13sp"
                 android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
@@ -203,7 +204,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Thao tác nhanh"
+            android:text="@string/quick_actions_title"
             android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="@color/textPrimary"
@@ -235,7 +236,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:gravity="center"
-                    android:text="+"
+                    android:text="@string/plus_sign"
                     android:textSize="24sp"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold"
@@ -244,7 +245,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tạo nhóm"
+                    android:text="@string/create_group_label"
                     android:textSize="13sp"
                     android:textColor="@color/textPrimary"
                     android:textStyle="bold"
@@ -253,7 +254,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tạo nhóm mới"
+                    android:text="@string/create_new_group_desc"
                     android:textSize="11sp"
                     android:textColor="@color/textSecondary"/>
             </LinearLayout>
@@ -276,7 +277,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:gravity="center"
-                    android:text="→"
+                    android:text="@string/arrow_sign"
                     android:textSize="22sp"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold"
@@ -285,7 +286,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tham gia"
+                    android:text="@string/join_group_label"
                     android:textSize="13sp"
                     android:textColor="@color/textPrimary"
                     android:textStyle="bold"
@@ -294,7 +295,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bằng mã nhóm"
+                    android:text="@string/by_group_code_desc"
                     android:textSize="11sp"
                     android:textColor="@color/textSecondary"/>
             </LinearLayout>

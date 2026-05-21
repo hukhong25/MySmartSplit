@@ -24,7 +24,7 @@ import java.util.List;
 import vn.haui.smartsplit.adapters.NotificationAdapter;
 import vn.haui.smartsplit.models.AppNotification;
 
-public class NotificationsActivity extends AppCompatActivity {
+public class NotificationsActivity extends BaseActivity {
 
     private RecyclerView rvNotifications;
     private TextView tvNoNotifications;

@@ -7,11 +7,10 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarMembers"
-        android:paddingTop="25dp"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:title="Quản lý thành viên"
+        app:title="@string/manage_members_title"
         app:titleTextColor="@android:color/white" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -28,6 +27,7 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:src="@android:drawable/ic_input_add"
-        app:tint="@android:color/white" />
+        app:tint="@android:color/white"
+        android:contentDescription="@string/add_member_fab_desc" />
 
 </LinearLayout>

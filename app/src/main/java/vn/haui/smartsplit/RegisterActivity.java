@@ -17,7 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     private EditText etDisplayName, etEmail, etPassword, etConfirmPassword;
     private MaterialButton btnRegister;

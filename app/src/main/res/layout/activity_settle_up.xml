@@ -28,7 +28,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thanh Toán / Trả Nợ"
+                android:text="@string/settle_up_title"
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorPrimary"
@@ -37,7 +37,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Người trả:"
+                android:text="@string/payer_label"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Người nhận:"
+                android:text="@string/recipient_label"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
@@ -78,14 +78,14 @@
                     android:id="@+id/etSettleAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Số tiền trả"
+                    android:hint="@string/settle_amount_hint"
                     android:inputType="numberDecimal"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ảnh minh chứng (không bắt buộc):"
+                android:text="@string/proof_optional_label"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
@@ -96,7 +96,7 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chọn ảnh từ thư viện"
+                android:text="@string/pick_image_btn"
                 android:layout_marginBottom="12dp" />
 
             <ImageView
@@ -106,13 +106,14 @@
                 android:layout_marginBottom="32dp"
                 android:scaleType="centerInside"
                 android:visibility="gone"
-                android:background="#EEEEEE" />
+                android:background="#EEEEEE"
+                android:contentDescription="@string/proof_preview_desc" />
 
             <Button
                 android:id="@+id/btnConfirmSettle"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Gửi yêu cầu thanh toán"
+                android:text="@string/submit_settle_request_btn"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:backgroundTint="@color/colorOwed"

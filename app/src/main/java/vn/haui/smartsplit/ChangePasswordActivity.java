@@ -13,7 +13,7 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class ChangePasswordActivity extends AppCompatActivity {
+public class ChangePasswordActivity extends BaseActivity {
 
     private TextInputEditText etCurrentPassword, etNewPassword, etConfirmNewPassword;
     private MaterialButton btnChangePassword, btnCancel;

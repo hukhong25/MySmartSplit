@@ -23,7 +23,7 @@ import vn.haui.smartsplit.adapters.MemberAdapter;
 import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
 
-public class GroupMembersActivity extends AppCompatActivity {
+public class GroupMembersActivity extends BaseActivity {
 
     private RecyclerView rvMembers;
     private FloatingActionButton fabAddMember;

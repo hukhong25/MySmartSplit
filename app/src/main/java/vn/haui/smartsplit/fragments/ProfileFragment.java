@@ -3,6 +3,8 @@ package vn.haui.smartsplit.fragments;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -19,12 +21,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
-import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Locale;
 
 import vn.haui.smartsplit.ChangePasswordActivity;
 import vn.haui.smartsplit.EditProfileActivity;
@@ -69,14 +72,20 @@ public class ProfileFragment extends Fragment {
         tvAvatarInitial = view.findViewById(R.id.tvAvatarInitial);
         tvProfileName   = view.findViewById(R.id.tvProfileName);
         tvProfileEmail  = view.findViewById(R.id.tvProfileEmail);
-        ivAvatar        = view.findViewById(R.id.ivAvatarProfile); 
+        ivAvatar        = view.findViewById(R.id.ivAvatarProfile);
 
         SwitchMaterial switchDark = view.findViewById(R.id.switchDarkMode);
         MaterialButton btnLogout  = view.findViewById(R.id.btnLogout);
         View rowChangePassword    = view.findViewById(R.id.rowChangePassword);
         View rowEditProfile       = view.findViewById(R.id.rowEditProfile);
+        View rowLanguage          = view.findViewById(R.id.rowLanguage);
 
         updateUI();
+
+        // Ngôn ngữ
+        if (rowLanguage != null) {
+            rowLanguage.setOnClickListener(v -> showLanguageDialog());
+        }
 
         // Dark mode switch
         boolean isDark = prefs.getBoolean(PREF_DARK_MODE, false);
@@ -88,7 +97,7 @@ public class ProfileFragment extends Fragment {
             );
         });
 
-        // Change Password - Navigate to ChangePasswordActivity
+        // Change Password
         if (rowChangePassword != null) {
             rowChangePassword.setOnClickListener(v -> {
                 Intent intent = new Intent(requireContext(), ChangePasswordActivity.class);
@@ -174,5 +183,41 @@ public class ProfileFragment extends Fragment {
         Intent intent = new Intent(requireContext(), LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+    }
+
+    private void showLanguageDialog() {
+        String[] languages = {"Tiếng Việt", "English"};
+        int currentLangIndex = prefs.getInt("selected_language_index", 0);
+
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Chọn ngôn ngữ / Select Language")
+                .setSingleChoiceItems(languages, currentLangIndex, (dialog, which) -> {
+                    prefs.edit().putInt("selected_language_index", which).apply();
+
+                    if (which == 0) {
+                        changeSystemLanguage("vi");
+                    } else {
+                        changeSystemLanguage("en");
+                    }
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Hủy / Cancel", null)
+                .show();
+    }
+
+    private void changeSystemLanguage(String langCode) {
+        prefs.edit().putString("app_lang", langCode).apply();
+
+        Locale locale = new Locale(langCode);
+        Locale.setDefault(locale);
+        Resources res = requireContext().getResources();
+        Configuration config = res.getConfiguration();
+        config.setLocale(locale);
+        res.updateConfiguration(config, res.getDisplayMetrics());
+
+        // 👉 Ép vẽ lại Activity hiện tại chuẩn xác nhất
+        if (getActivity() != null) {
+            getActivity().recreate();
+        }
     }
 }

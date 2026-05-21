@@ -12,10 +12,9 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarGroupDetails"
             android:layout_width="match_parent"
-            android:paddingTop="25dp"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:title="Chi tiết nhóm"
+            app:title="@string/group_details_title"
             app:titleTextColor="@android:color/white" />
 
         <com.google.android.material.tabs.TabLayout
@@ -30,12 +29,12 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Giao dịch" />
+                android:text="@string/tab_transactions" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Số dư" />
+                android:text="@string/tab_balances" />
 
         </com.google.android.material.tabs.TabLayout>
 
@@ -56,6 +55,7 @@
         android:layout_margin="16dp"
         android:src="@android:drawable/ic_input_add"
         app:tint="@android:color/white"
-        app:backgroundTint="@color/colorPrimary" />
+        app:backgroundTint="@color/colorPrimary"
+        android:contentDescription="@string/add_expense_fab_desc" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -8,7 +8,6 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarAddExpense"
-        android:paddingTop="25dp"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/white"
@@ -29,7 +28,7 @@
                 android:id="@+id/tvTitleHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chi tiết khoản chi"
+                android:text="@string/add_expense_title"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorPrimary"
@@ -45,7 +44,7 @@
                     android:id="@+id/etExpenseDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nội dung chi tiêu (v.d. Ăn tối)"/>
+                    android:hint="@string/expense_desc_hint"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -58,14 +57,14 @@
                     android:id="@+id/etExpenseAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Số tiền"
+                    android:hint="@string/amount_label"
                     android:inputType="numberDecimal"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Người trả tiền:"
+                android:text="@string/payer_title"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
@@ -82,7 +81,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chia cho ai:"
+                android:text="@string/split_with_label"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
@@ -106,7 +105,7 @@
                 android:id="@+id/btnSaveGroupExpense"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Lưu hóa đơn"
+                android:text="@string/save_invoice_btn"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:backgroundTint="@color/colorPrimary"

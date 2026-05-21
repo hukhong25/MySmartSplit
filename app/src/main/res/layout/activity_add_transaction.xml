@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Thêm Giao Dịch"
+        android:text="@string/add_transaction_title"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="#3F51B5"
@@ -19,7 +19,7 @@
         android:id="@+id/etAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Số tiền"
+        android:hint="@string/amount_hint"
         android:inputType="numberDecimal"
         android:padding="12dp"
         android:background="@android:drawable/editbox_background"
@@ -37,7 +37,7 @@
         android:id="@+id/etNote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ghi chú (tùy chọn)"
+        android:hint="@string/note_optional_hint"
         android:inputType="text"
         android:padding="12dp"
         android:background="@android:drawable/editbox_background"
@@ -47,7 +47,7 @@
         android:id="@+id/etDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ngày (DD/MM/YYYY)"
+        android:hint="@string/date_format_hint"
         android:inputType="date"
         android:padding="12dp"
         android:background="@android:drawable/editbox_background"
@@ -67,7 +67,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Khoản chi"
+            android:text="@string/type_expense"
             android:checked="true" />
 
         <RadioButton
@@ -75,14 +75,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Khoản thu" />
+            android:text="@string/type_income" />
     </RadioGroup>
 
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lưu giao dịch"
+        android:text="@string/save_transaction_btn"
         android:backgroundTint="#3F51B5"
         android:textColor="@android:color/white" />
 

@@ -14,7 +14,7 @@ import vn.haui.smartsplit.fragments.StatsFragment;
  * HomeContainerActivity – host duy nhất cho BottomNavigationView.
  * Quản lý 4 Fragment: Dashboard, Groups, Stats, Profile.
  */
-public class HomeContainerActivity extends AppCompatActivity {
+public class HomeContainerActivity extends BaseActivity {
 
     private BottomNavigationView bottomNavigationView;
     private static final String KEY_SELECTED_TAB = "selected_tab";

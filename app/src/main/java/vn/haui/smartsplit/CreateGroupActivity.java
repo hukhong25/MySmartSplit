@@ -20,7 +20,7 @@ import vn.haui.smartsplit.adapters.MemberAdapter;
 import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
 
-public class CreateGroupActivity extends AppCompatActivity {
+public class CreateGroupActivity extends BaseActivity {
 
     private EditText etGroupName, etMemberEmail;
     private Button btnCreateGroup, btnAddMember;

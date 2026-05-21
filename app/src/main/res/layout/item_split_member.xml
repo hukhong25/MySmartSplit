@@ -17,7 +17,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Tên thành viên"
+        android:text="@string/default_member_name"
         android:textSize="16sp"
         android:layout_marginStart="8dp" />
 
@@ -25,7 +25,7 @@
         android:id="@+id/etSplitAmount"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:hint="Số tiền"
+        android:hint="@string/amount_hint"
         android:inputType="numberDecimal"
         android:textSize="14sp"
         android:visibility="gone" />

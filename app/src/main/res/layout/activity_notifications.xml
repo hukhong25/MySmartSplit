@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/white"
-        app:title="Thông báo"
+        app:title="@string/notifications_title"
         app:titleTextColor="@color/textPrimary"
         app:elevation="4dp" />
 
@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="Không có thông báo mới"
+        android:text="@string/no_notifications_msg"
         android:textSize="16sp"
         android:textColor="@color/textSecondary"
         android:visibility="gone" />

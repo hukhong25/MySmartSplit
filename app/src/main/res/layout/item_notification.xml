@@ -13,7 +13,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@color/textPrimary"
-        android:text="Tiêu đề thông báo" />
+        android:text="@string/default_notification_title" />
 
     <TextView
         android:id="@+id/tvNotifContent"
@@ -22,7 +22,7 @@
         android:textSize="14sp"
         android:textColor="@color/textSecondary"
         android:layout_marginTop="4dp"
-        android:text="Nội dung thông báo chi tiết xuất hiện ở đây." />
+        android:text="@string/default_notification_content" />
 
     <TextView
         android:id="@+id/tvNotifTime"
@@ -31,6 +31,6 @@
         android:textSize="11sp"
         android:textColor="@color/textSecondary"
         android:layout_marginTop="8dp"
-        android:text="12:30 15/10/2023" />
+        android:text="@string/default_notification_time" />
 
 </LinearLayout>

@@ -23,7 +23,7 @@ import java.util.Map;
 import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
 
-public class SettleDetailActivity extends AppCompatActivity {
+public class SettleDetailActivity extends BaseActivity {
 
     private TextView tvDetailDescription, tvDetailAmount, tvDetailStatus, tvDetailPayer;
     private ImageView ivDetailProof;

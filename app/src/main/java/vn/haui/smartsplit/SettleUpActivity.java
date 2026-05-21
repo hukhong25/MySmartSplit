@@ -36,7 +36,7 @@ import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.User;
 
-public class SettleUpActivity extends AppCompatActivity {
+public class SettleUpActivity extends BaseActivity {
 
     private Spinner spFromUser, spToUser;
     private EditText etSettleAmount;

@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/backgroundColor">
+    android:background="@color/backgroundColor"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +24,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thống kê chi tiêu"
+                android:text="@string/spending_stats_title"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary"/>
@@ -31,7 +32,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tổng quan chi tiêu của bạn"
+                android:text="@string/spending_stats_subtitle"
                 android:textSize="13sp"
                 android:textColor="@color/textSecondary"
                 android:layout_marginTop="2dp"/>
@@ -52,7 +53,7 @@
                 style="@style/Widget.SmartSplit.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tuần này"
+                android:text="@string/chip_this_week"
                 android:checkable="true"/>
 
             <com.google.android.material.chip.Chip
@@ -60,7 +61,7 @@
                 style="@style/Widget.SmartSplit.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tháng này"
+                android:text="@string/chip_this_month"
                 android:checkable="true"
                 android:checked="true"/>
 
@@ -69,7 +70,7 @@
                 style="@style/Widget.SmartSplit.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Năm nay"
+                android:text="@string/chip_this_year"
                 android:checkable="true"/>
         </com.google.android.material.chip.ChipGroup>
 
@@ -137,7 +138,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Chi tiêu hàng tháng"
+                        android:text="@string/monthly_spending_title"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/textPrimary"/>
@@ -146,7 +147,7 @@
                         android:id="@+id/tvTrendPercent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="↓ 12%"
+                        android:text="@string/default_trend_percent"
                         android:textSize="13sp"
                         android:textColor="@color/colorOwed"
                         android:textStyle="bold"/>
@@ -156,7 +157,7 @@
                     android:id="@+id/tvTrendDesc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bạn đã chi tiêu ít hơn 12% so với tháng trước."
+                    android:text="@string/default_trend_desc"
                     android:textSize="13sp"
                     android:textColor="@color/textSecondary"
                     android:layout_marginBottom="20dp"/>
@@ -187,7 +188,7 @@
                             android:id="@+id/tvBarLastMonthAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₫14,150k"
+                            android:text="@string/default_last_month_amount"
                             android:textSize="11sp"
                             android:textColor="@color/textSecondary"
                             android:layout_marginTop="4dp"/>
@@ -195,7 +196,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tháng trước"
+                            android:text="@string/label_last_month"
                             android:textSize="11sp"
                             android:textColor="@color/textSecondary"/>
                     </LinearLayout>
@@ -218,7 +219,7 @@
                             android:id="@+id/tvBarThisMonthAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₫12,450k"
+                            android:text="@string/default_this_month_amount"
                             android:textSize="11sp"
                             android:textColor="@color/colorPrimary"
                             android:textStyle="bold"
@@ -227,7 +228,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tháng này"
+                            android:text="@string/label_this_month"
                             android:textSize="11sp"
                             android:textColor="@color/colorPrimary"
                             android:textStyle="bold"/>

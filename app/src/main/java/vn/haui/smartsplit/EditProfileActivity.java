@@ -27,7 +27,7 @@ import com.google.firebase.storage.UploadTask;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditProfileActivity extends BaseActivity {
 
     private TextInputEditText etDisplayName;
     private ImageView ivAvatar;

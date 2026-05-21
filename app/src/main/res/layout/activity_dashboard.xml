@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:title="Smart Split"
+            app:title="@string/app_name"
             app:titleTextColor="@android:color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -46,7 +46,7 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Chào bạn!"
+                    android:text="@string/welcome_user"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="#333333" />
@@ -55,7 +55,7 @@
                     android:id="@+id/btnMainLogout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đăng xuất"
+                    android:text="@string/logout_btn"
                     android:backgroundTint="#D32F2F"
                     android:textColor="@android:color/white"
                     android:minHeight="56dp"
@@ -91,7 +91,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bạn nợ"
+                            android:text="@string/you_owe_label"
                             android:textColor="#CCFFFFFF"
                             android:textSize="13sp" />
 
@@ -99,7 +99,7 @@
                             android:id="@+id/tvTotalOwe"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
+                            android:text="@string/default_currency_zero"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:textColor="#FFCDD2"
@@ -121,7 +121,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bạn được trả"
+                            android:text="@string/you_are_owed_label"
                             android:textColor="#CCFFFFFF"
                             android:textSize="13sp" />
 
@@ -129,7 +129,7 @@
                             android:id="@+id/tvTotalOwed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 VNĐ"
+                            android:text="@string/default_currency_zero"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:textColor="#C8E6C9"
@@ -147,7 +147,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nhóm của bạn"
+                    android:text="@string/your_groups_title"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#333333" />
@@ -157,7 +157,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="Xem tất cả"
+                    android:text="@string/see_all_action"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold"
                     android:padding="8dp" />
@@ -180,7 +180,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="TẠO NHÓM"
+        android:text="@string/create_group_fab"
         android:textColor="@android:color/white"
         app:icon="@android:drawable/ic_input_add"
         app:iconTint="@android:color/white"

@@ -28,7 +28,7 @@ import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.User;
 
-public class AddGroupExpenseActivity extends AppCompatActivity {
+public class AddGroupExpenseActivity extends BaseActivity {
 
     private EditText etExpenseDescription, etExpenseAmount;
     private Spinner spPayer;

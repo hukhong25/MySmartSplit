@@ -131,33 +131,41 @@ public class BalanceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         DecimalFormat fmt = new DecimalFormat("#,###");
 
         if (holder instanceof HeaderViewHolder) {
-            ((HeaderViewHolder) holder).tvHeader.setText(position == 0 ? "GỢI Ý TẤT TOÁN TỐI ƯU" : "SỐ DƯ CHI TIẾT");
+            HeaderViewHolder hvh = (HeaderViewHolder) holder;
+            String headerText = position == 0
+                    ? hvh.itemView.getContext().getString(R.string.header_optimized_settlement)
+                    : hvh.itemView.getContext().getString(R.string.header_detailed_balance);
+            hvh.tvHeader.setText(headerText);
             return;
         }
 
         BalanceViewHolder vh = (BalanceViewHolder) holder;
         int viewType = getItemViewType(position);
+        android.content.Context ctx = vh.itemView.getContext();
 
         if (viewType == TYPE_TRANSACTION) {
             Transaction t = optimizedTransactions.get(position - 1);
             boolean isFromMe = t.fromId.equals(currentUserId);
             boolean isToMe = t.toId.equals(currentUserId);
 
-            vh.tvUserName.setText((isFromMe ? "Bạn" : t.fromName) + " ➔ " + (isToMe ? "Bạn" : t.toName));
-            vh.tvBalanceStatus.setText("Cần chuyển: " + fmt.format(t.amount) + "₫");
+            String fromName = isFromMe ? ctx.getString(R.string.user_you_short) : t.fromName;
+            String toName = isToMe ? ctx.getString(R.string.user_you_short) : t.toName;
+
+            vh.tvUserName.setText(ctx.getString(R.string.transaction_direction_format, fromName, toName));
+            vh.tvBalanceStatus.setText(ctx.getString(R.string.transfer_amount_format, fmt.format(t.amount)));
             vh.tvBalanceStatus.setTextColor(Color.parseColor("#3B82F6"));
-            vh.tvAvatarInitial.setText("⇄");
+            vh.tvAvatarInitial.setText(ctx.getString(R.string.transaction_arrow_initial));
             vh.viewAvatarBg.setBackgroundColor(Color.LTGRAY);
 
             if (isFromMe) {
                 vh.btnBalanceAction.setVisibility(View.VISIBLE);
-                vh.btnBalanceAction.setText("Tất toán");
+                vh.btnBalanceAction.setText(ctx.getString(R.string.settle_up_btn_text));
                 vh.btnBalanceAction.setOnClickListener(v -> {
                     if (actionListener != null) actionListener.onSettleTransaction(t);
                 });
             } else if (isToMe) {
                 vh.btnBalanceAction.setVisibility(View.VISIBLE);
-                vh.btnBalanceAction.setText("Nhắc nợ");
+                vh.btnBalanceAction.setText(ctx.getString(R.string.remind_debt_btn_text));
                 vh.btnBalanceAction.setOnClickListener(v -> {
                     if (actionListener != null) {
                         for (User u : members) if (u.getUid().equals(t.fromId)) {
@@ -176,40 +184,36 @@ public class BalanceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             double myBalance = balances.getOrDefault(currentUserId, 0.0);
             boolean isMe = user.getUid().equals(currentUserId);
 
-            String name = user.getName() != null ? user.getName() : "Người dùng";
-            vh.tvUserName.setText(isMe ? name + " (Bạn)" : name);
+            String name = user.getName() != null ? user.getName() : ctx.getString(R.string.default_username);
+            vh.tvUserName.setText(isMe ? ctx.getString(R.string.username_with_you_suffix, name) : name);
             vh.tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
             vh.viewAvatarBg.setBackgroundColor(AVATAR_COLORS[mPos % AVATAR_COLORS.length]);
 
             if (balance > 1.0) {
-                // Người này ĐANG ĐƯỢC NHẬN TIỀN
-                vh.tvBalanceStatus.setText("Được nhận: " + fmt.format(balance) + "₫");
+                vh.tvBalanceStatus.setText(ctx.getString(R.string.receive_amount_format, fmt.format(balance)));
                 vh.tvBalanceStatus.setTextColor(Color.parseColor("#1CC29F"));
-                
-                // Chỉ hiện "Tất toán" nếu mình đang nợ và họ đang được nhận
+
                 if (!isMe && myBalance < -1.0) {
                     vh.btnBalanceAction.setVisibility(View.VISIBLE);
-                    vh.btnBalanceAction.setText("Tất toán");
+                    vh.btnBalanceAction.setText(ctx.getString(R.string.settle_up_btn_text));
                     vh.btnBalanceAction.setOnClickListener(v -> actionListener.onSettleUp(user, balance));
                 } else {
                     vh.btnBalanceAction.setVisibility(View.GONE);
                 }
             } else if (balance < -1.0) {
-                // Người này ĐANG NỢ TIỀN
                 double owe = Math.abs(balance);
-                vh.tvBalanceStatus.setText("Còn nợ: " + fmt.format(owe) + "₫");
+                vh.tvBalanceStatus.setText(ctx.getString(R.string.owe_amount_format, fmt.format(owe)));
                 vh.tvBalanceStatus.setTextColor(Color.parseColor("#E53935"));
-                
-                // Chỉ hiện "Nhắc nợ" nếu mình đang được nhận và họ đang nợ
+
                 if (!isMe && myBalance > 1.0) {
                     vh.btnBalanceAction.setVisibility(View.VISIBLE);
-                    vh.btnBalanceAction.setText("Nhắc nợ");
+                    vh.btnBalanceAction.setText(ctx.getString(R.string.remind_debt_btn_text));
                     vh.btnBalanceAction.setOnClickListener(v -> actionListener.onRemind(user, owe));
                 } else {
                     vh.btnBalanceAction.setVisibility(View.GONE);
                 }
             } else {
-                vh.tvBalanceStatus.setText("Đã sòng phẳng");
+                vh.tvBalanceStatus.setText(ctx.getString(R.string.settled_up_status));
                 vh.tvBalanceStatus.setTextColor(Color.GRAY);
                 vh.btnBalanceAction.setVisibility(View.GONE);
             }

@@ -33,7 +33,7 @@ import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
 
-public class GroupDetailsActivity extends AppCompatActivity implements 
+public class GroupDetailsActivity extends BaseActivity implements
         BalanceAdapter.OnActionClickListener, 
         GroupExpenseAdapter.OnExpenseActionListener {
 

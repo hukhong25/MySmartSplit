@@ -37,7 +37,8 @@
                     android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:src="@android:drawable/ic_menu_mylocation"
-                    app:tint="@color/colorPrimary"/>
+                    app:tint="@color/colorPrimary"
+                    android:contentDescription="@string/group_icon_desc" />
             </FrameLayout>
 
             <!-- Name + Member count -->
@@ -52,7 +53,7 @@
                     android:id="@+id/tvGroupName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tên nhóm"
+                    android:text="@string/default_group_name"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="@color/textPrimary"/>
@@ -61,7 +62,7 @@
                     android:id="@+id/tvMemberCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3 thành viên"
+                    android:text="@string/default_member_count"
                     android:textSize="12sp"
                     android:textColor="@color/textSecondary"
                     android:layout_marginTop="2dp"/>
@@ -99,7 +100,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trạng thái"
+                    android:text="@string/status_label"
                     android:textSize="12sp"
                     android:textColor="@color/textSecondary"/>
 
@@ -107,7 +108,7 @@
                     android:id="@+id/tvGroupStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bạn được nợ"
+                    android:text="@string/default_group_status"
                     android:textSize="12sp"
                     android:textColor="@color/colorOwed"
                     android:textStyle="bold"
@@ -123,7 +124,7 @@
                 android:id="@+id/tvGroupBalance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₫200,000"
+                android:text="@string/default_group_balance"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorOwed"/>

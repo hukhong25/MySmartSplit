@@ -17,7 +17,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AddTransactionActivity extends AppCompatActivity {
+public class AddTransactionActivity extends BaseActivity {
 
     private EditText etAmount, etNote, etDate;
     private Spinner spCategory;

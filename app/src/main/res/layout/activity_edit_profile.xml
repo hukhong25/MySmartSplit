@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/cardBackground"
-        app:title="Chỉnh sửa thông tin"
+        app:title="@string/edit_profile_title"
         app:titleTextColor="@color/textPrimary" />
 
     <ScrollView
@@ -44,7 +44,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="U"
+                    android:text="@string/default_avatar_initial"
                     android:textSize="48sp"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"
@@ -69,7 +69,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Tên hiển thị"
+                android:hint="@string/display_name_hint"
                 app:startIconDrawable="@android:drawable/ic_menu_edit"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
@@ -85,7 +85,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                android:text="Lưu"
+                android:text="@string/save_btn"
                 app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -93,7 +93,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
-                android:text="Hủy"
+                android:text="@string/cancel_btn"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:textColor="@color/textSecondary" />
 

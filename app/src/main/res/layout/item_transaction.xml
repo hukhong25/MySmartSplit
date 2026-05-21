@@ -33,7 +33,8 @@
                 android:layout_height="22dp"
                 android:layout_gravity="center"
                 android:src="@android:drawable/ic_menu_manage"
-                app:tint="@color/colorPrimary"/>
+                app:tint="@color/colorPrimary"
+                android:contentDescription="@string/transaction_icon_desc" />
         </FrameLayout>
 
         <!-- Description + Date -->
@@ -100,7 +101,7 @@
             android:src="@android:drawable/ic_menu_more"
             android:layout_marginStart="8dp"
             app:tint="@color/textSecondary"
-            android:contentDescription="Tùy chọn" />
+            android:contentDescription="@string/options_button_desc" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

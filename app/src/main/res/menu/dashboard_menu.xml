@@ -4,6 +4,6 @@
     <item
         android:id="@+id/action_logout"
         android:icon="@android:drawable/ic_lock_power_off"
-        android:title="Đăng xuất"
+        android:title="@string/action_logout_title"
         app:showAsAction="always" />
 </menu>

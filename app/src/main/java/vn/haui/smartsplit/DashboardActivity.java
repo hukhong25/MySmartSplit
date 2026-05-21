@@ -28,7 +28,7 @@ import vn.haui.smartsplit.adapters.GroupAdapter;
 import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.Group;
 
-public class DashboardActivity extends AppCompatActivity {
+public class DashboardActivity extends BaseActivity {
 
     private RecyclerView rvDashboardGroups;
     private GroupAdapter groupAdapter;

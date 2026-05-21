@@ -65,7 +65,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ảnh minh chứng:"
+                android:text="@string/proof_image_label"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
 
@@ -76,7 +76,8 @@
                 android:scaleType="centerInside"
                 android:background="#EEEEEE"
                 android:layout_marginBottom="24dp"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:contentDescription="@string/proof_image_desc" />
 
             <LinearLayout
                 android:id="@+id/layoutActionButtons"
@@ -91,7 +92,7 @@
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Từ chối"
+                    android:text="@string/reject_btn"
                     android:textColor="#E53935"
                     android:layout_marginEnd="8dp" />
 
@@ -100,7 +101,7 @@
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Xác nhận"
+                    android:text="@string/accept_btn"
                     android:backgroundTint="#1CC29F"
                     android:layout_marginStart="8dp" />
             </LinearLayout>

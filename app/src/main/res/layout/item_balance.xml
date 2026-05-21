@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="A"
+                android:text="@string/default_member_initial"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"/>
@@ -52,7 +52,7 @@
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tên thành viên"
+                android:text="@string/default_member_name"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary"/>
@@ -61,7 +61,7 @@
                 android:id="@+id/tvBalanceStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nợ bạn ₫450,000"
+                android:text="@string/default_member_balance_status"
                 android:textSize="12sp"
                 android:textColor="@color/colorOwe"
                 android:layout_marginTop="2dp"/>
@@ -73,7 +73,7 @@
             style="@style/Widget.SmartSplit.Button.SettleUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tất toán"/>
+            android:text="@string/settle_up_action_btn"/>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

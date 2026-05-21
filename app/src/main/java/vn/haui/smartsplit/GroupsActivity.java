@@ -28,7 +28,7 @@ import java.util.List;
 import vn.haui.smartsplit.adapters.GroupAdapter;
 import vn.haui.smartsplit.models.Group;
 
-public class GroupsActivity extends AppCompatActivity {
+public class GroupsActivity extends BaseActivity {
 
     private RecyclerView rvGroups;
     private GroupAdapter adapter;
