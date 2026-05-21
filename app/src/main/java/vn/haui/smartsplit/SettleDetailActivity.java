@@ -1,6 +1,7 @@
 package vn.haui.smartsplit;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -8,7 +9,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -17,11 +20,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.Locale;
 import java.util.Map;
 
+import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
 
 public class SettleDetailActivity extends AppCompatActivity {
 
-    private TextView tvDetailDescription, tvDetailAmount, tvDetailStatus;
+    private TextView tvDetailDescription, tvDetailAmount, tvDetailStatus, tvDetailPayer;
     private ImageView ivDetailProof;
     private LinearLayout layoutActionButtons;
     private Button btnAccept, btnReject;
@@ -40,7 +44,15 @@ public class SettleDetailActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         expenseId = getIntent().getStringExtra("EXPENSE_ID");
 
+        Toolbar toolbar = findViewById(R.id.toolbarSettleDetail);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Chi tiết giao dịch");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         tvDetailDescription = findViewById(R.id.tvDetailDescription);
+        tvDetailPayer = findViewById(R.id.tvDetailPayer);
         tvDetailAmount = findViewById(R.id.tvDetailAmount);
         tvDetailStatus = findViewById(R.id.tvDetailStatus);
         ivDetailProof = findViewById(R.id.ivDetailProof);
@@ -54,40 +66,44 @@ public class SettleDetailActivity extends AppCompatActivity {
     private void loadExpenseDetail() {
         if (expenseId == null) return;
 
-        db.collection("expenses").document(expenseId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    currentExpense = documentSnapshot.toObject(Expense.class);
-                    if (currentExpense != null) {
-                        displayDetail();
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        db.collection("expenses").document(expenseId).addSnapshotListener((doc, error) -> {
+            if (error != null || doc == null) return;
+            currentExpense = doc.toObject(Expense.class);
+            if (currentExpense != null) {
+                displayDetail();
+            }
+        });
     }
 
     private void displayDetail() {
         tvDetailDescription.setText(currentExpense.getDescription());
+        tvDetailPayer.setText("Người gửi: " + currentExpense.getPayerName());
         tvDetailAmount.setText(String.format(Locale.getDefault(), "%,.0f VND", currentExpense.getAmount()));
         
-        String statusText = "Trạng thái: ";
-        if (Expense.STATUS_PENDING.equals(currentExpense.getStatus())) {
-            statusText += "Chờ xác nhận";
-        } else if (Expense.STATUS_COMPLETED.equals(currentExpense.getStatus())) {
-            statusText += "Đã hoàn thành";
-        } else if (Expense.STATUS_REJECTED.equals(currentExpense.getStatus())) {
-            statusText += "Đã bị từ chối";
+        String status = currentExpense.getStatus();
+        if (Expense.STATUS_PENDING.equals(status)) {
+            tvDetailStatus.setText("Trạng thái: Đang chờ xác nhận");
+            tvDetailStatus.setTextColor(android.graphics.Color.parseColor("#FFA500"));
+        } else if (Expense.STATUS_COMPLETED.equals(status)) {
+            tvDetailStatus.setText("Trạng thái: Đã tất toán");
+            tvDetailStatus.setTextColor(android.graphics.Color.parseColor("#2E7D32"));
+        } else {
+            tvDetailStatus.setText("Trạng thái: Đã bị từ chối");
+            tvDetailStatus.setTextColor(android.graphics.Color.RED);
         }
-        tvDetailStatus.setText(statusText);
 
-        if (currentExpense.getProofImageUrl() != null) {
+        if (currentExpense.getProofImageUrl() != null && !currentExpense.getProofImageUrl().isEmpty()) {
+            ivDetailProof.setVisibility(View.VISIBLE);
             Glide.with(this).load(currentExpense.getProofImageUrl()).into(ivDetailProof);
+        } else {
+            ivDetailProof.setVisibility(View.GONE);
         }
 
-        // Check if current user is the receiver to show buttons
         String currentUid = mAuth.getUid();
-        Map<String, Double> splitDetails = currentExpense.getSplitDetails();
-        
-        if (Expense.STATUS_PENDING.equals(currentExpense.getStatus()) && 
-            splitDetails != null && splitDetails.containsKey(currentUid)) {
+        Map<String, Double> split = currentExpense.getSplitDetails();
+        boolean isReceiver = split != null && split.containsKey(currentUid);
+
+        if (Expense.STATUS_PENDING.equals(status) && isReceiver) {
             layoutActionButtons.setVisibility(View.VISIBLE);
         } else {
             layoutActionButtons.setVisibility(View.GONE);
@@ -98,16 +114,40 @@ public class SettleDetailActivity extends AppCompatActivity {
     }
 
     private void updateStatus(String newStatus) {
-        layoutActionButtons.setVisibility(View.GONE);
         db.collection("expenses").document(expenseId)
                 .update("status", newStatus)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Đã cập nhật trạng thái!", Toast.LENGTH_SHORT).show();
+                    createResponseNotification(newStatus);
+                    String msg = newStatus.equals(Expense.STATUS_COMPLETED) ? "Đã xác nhận thanh toán!" : "Đã từ chối thanh toán!";
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                     finish();
-                })
-                .addOnFailureListener(e -> {
-                    layoutActionButtons.setVisibility(View.VISIBLE);
-                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void createResponseNotification(String status) {
+        if (currentExpense == null) return;
+        String senderId = currentExpense.getPayerId();
+        String receiverName = mAuth.getCurrentUser().getDisplayName();
+        if (receiverName == null || receiverName.isEmpty()) receiverName = "Người nhận";
+
+        String title = status.equals(Expense.STATUS_COMPLETED) ? "Thanh toán được xác nhận" : "Thanh toán bị từ chối";
+        String content = receiverName + (status.equals(Expense.STATUS_COMPLETED) ? " đã xác nhận" : " đã từ chối") + " khoản thanh toán " + (long)currentExpense.getAmount() + " VND của bạn.";
+
+        String notifId = db.collection("notifications").document().getId();
+        AppNotification notif = new AppNotification(
+                notifId,
+                senderId,
+                title,
+                content,
+                "PAYMENT_RESPONSE",
+                expenseId
+        );
+        db.collection("notifications").document(notifId).set(notif);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) { finish(); return true; }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
@@ -47,16 +48,18 @@
                 android:id="@+id/tvTransactionDesc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mô tả giao dịch"
+                tools:text="Ăn trưa"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/textPrimary"/>
+                android:textColor="@color/textPrimary"
+                android:ellipsize="end"
+                android:maxLines="1"/>
 
             <TextView
                 android:id="@+id/tvTransactionPayer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Trả bởi: Bạn"
+                tools:text="Trả bởi: Bạn"
                 android:textSize="12sp"
                 android:textColor="@color/textSecondary"
                 android:layout_marginTop="2dp"/>
@@ -73,20 +76,31 @@
                 android:id="@+id/tvTransactionAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₫500,000"
+                tools:text="₫500,000"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/colorOwed"/>
+                android:textColor="@color/textPrimary"/>
 
             <TextView
                 android:id="@+id/tvTransactionShare"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phần của bạn: ₫125k"
+                tools:text="Bạn nợ ₫125k"
                 android:textSize="11sp"
                 android:textColor="@color/textSecondary"
                 android:layout_marginTop="2dp"/>
         </LinearLayout>
+
+        <!-- Edit/Delete Options -->
+        <ImageButton
+            android:id="@+id/btnExpenseOptions"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_more"
+            android:layout_marginStart="8dp"
+            app:tint="@color/textSecondary"
+            android:contentDescription="Tùy chọn" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

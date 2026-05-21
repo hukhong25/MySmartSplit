@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,11 +26,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import vn.haui.smartsplit.CreateGroupActivity;
 import vn.haui.smartsplit.GroupDetailsActivity;
+import vn.haui.smartsplit.NotificationsActivity;
 import vn.haui.smartsplit.R;
 import vn.haui.smartsplit.adapters.GroupAdapter;
 import vn.haui.smartsplit.models.Expense;
@@ -43,6 +46,8 @@ public class DashboardFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private TextView tvTotalOwe, tvTotalOwed, tvWelcome, tvSeeAllGroups;
+    private ImageView ivNotification;
+    private View viewNotifBadge;
 
     @Nullable
     @Override
@@ -64,8 +69,9 @@ public class DashboardFragment extends Fragment {
         tvTotalOwed      = view.findViewById(R.id.tvTotalOwed);
         tvSeeAllGroups   = view.findViewById(R.id.tvSeeAllGroups);
         rvDashboardGroups = view.findViewById(R.id.rvDashboardGroups);
+        ivNotification   = view.findViewById(R.id.ivNotification);
+        viewNotifBadge   = view.findViewById(R.id.viewNotifBadge);
 
-        // Welcome name
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
             tvWelcome.setText(user.getDisplayName());
@@ -73,7 +79,6 @@ public class DashboardFragment extends Fragment {
             tvWelcome.setText("Người dùng");
         }
 
-        // RecyclerView
         rvDashboardGroups.setLayoutManager(new LinearLayoutManager(requireContext()));
         groupList = new ArrayList<>();
         groupAdapter = new GroupAdapter(groupList, group -> {
@@ -84,7 +89,6 @@ public class DashboardFragment extends Fragment {
         });
         rvDashboardGroups.setAdapter(groupAdapter);
 
-        // See all groups
         tvSeeAllGroups.setOnClickListener(v -> {
             if (getActivity() instanceof vn.haui.smartsplit.HomeContainerActivity) {
                 ((vn.haui.smartsplit.HomeContainerActivity) getActivity())
@@ -92,7 +96,10 @@ public class DashboardFragment extends Fragment {
             }
         });
 
-        // Quick actions
+        ivNotification.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), NotificationsActivity.class));
+        });
+
         View btnCreate = view.findViewById(R.id.btnQuickCreateGroup);
         View btnJoin   = view.findViewById(R.id.btnQuickJoinGroup);
         if (btnCreate != null) btnCreate.setOnClickListener(v ->
@@ -100,13 +107,26 @@ public class DashboardFragment extends Fragment {
         if (btnJoin != null) btnJoin.setOnClickListener(v -> showJoinGroupDialog());
 
         loadDashboardData();
+        listenToNotifications();
+    }
+
+    private void listenToNotifications() {
+        if (mAuth.getCurrentUser() == null) return;
+        String uid = mAuth.getUid();
+
+        db.collection("notifications")
+                .whereEqualTo("userId", uid)
+                .whereEqualTo("read", false)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null || value == null || !isAdded()) return;
+                    viewNotifBadge.setVisibility(value.isEmpty() ? View.GONE : View.VISIBLE);
+                });
     }
 
     private void loadDashboardData() {
         if (mAuth.getCurrentUser() == null) return;
         String currentUserId = mAuth.getCurrentUser().getUid();
 
-        // Load 3 recent groups
         db.collection("groups")
                 .whereArrayContains("memberIds", currentUserId)
                 .limit(3)
@@ -122,34 +142,52 @@ public class DashboardFragment extends Fragment {
                     groupAdapter.notifyDataSetChanged();
                 });
 
-        // Tính tổng nợ / được nợ
         db.collectionGroup("expenses")
                 .addSnapshotListener((value, error) -> {
                     if (error != null || value == null || !isAdded()) return;
 
-                    double totalOwe = 0;
-                    double totalOwed = 0;
+                    Map<String, Double> groupBalances = new HashMap<>();
 
                     for (QueryDocumentSnapshot doc : value) {
                         String status = doc.getString("status");
-                        if (status != null && !status.equals(Expense.STATUS_COMPLETED)) continue;
+                        if (!Expense.STATUS_COMPLETED.equals(status)) continue;
+
+                        String groupId = doc.getString("groupId");
+                        if (groupId == null) continue;
 
                         String payerId = doc.getString("payerId");
+                        double amount = 0;
+                        Object amtObj = doc.get("amount");
+                        if (amtObj != null) {
+                            try { amount = Double.parseDouble(amtObj.toString()); }
+                            catch (Exception ignored) {}
+                        }
+
                         @SuppressWarnings("unchecked")
-                        Map<String, Object> splitDetails =
-                                (Map<String, Object>) doc.get("splitDetails");
+                        Map<String, Object> splitDetails = (Map<String, Object>) doc.get("splitDetails");
                         if (splitDetails == null) continue;
 
+                        double userBalanceChange = 0;
                         if (currentUserId.equals(payerId)) {
-                            for (Map.Entry<String, Object> entry : splitDetails.entrySet()) {
-                                if (!entry.getKey().equals(currentUserId)) {
-                                    totalOwed += Double.parseDouble(entry.getValue().toString());
-                                }
-                            }
-                        } else if (splitDetails.containsKey(currentUserId)) {
-                            totalOwe += Double.parseDouble(
-                                    splitDetails.get(currentUserId).toString());
+                            userBalanceChange += amount;
                         }
+                        if (splitDetails.containsKey(currentUserId)) {
+                            try {
+                                userBalanceChange -= Double.parseDouble(splitDetails.get(currentUserId).toString());
+                            } catch (Exception ignored) {}
+                        }
+
+                        if (userBalanceChange != 0) {
+                            double current = groupBalances.getOrDefault(groupId, 0.0);
+                            groupBalances.put(groupId, current + userBalanceChange);
+                        }
+                    }
+
+                    double totalOwe = 0;
+                    double totalOwed = 0;
+                    for (double bal : groupBalances.values()) {
+                        if (bal > 1.0) totalOwed += bal;
+                        else if (bal < -1.0) totalOwe += Math.abs(bal);
                     }
 
                     DecimalFormat fmt = new DecimalFormat("#,###");

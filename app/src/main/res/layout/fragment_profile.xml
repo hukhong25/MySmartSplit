@@ -32,6 +32,13 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_avatar_circle"/>
 
+                <ImageView
+                    android:id="@+id/ivAvatarProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"/>
+
                 <TextView
                     android:id="@+id/tvAvatarInitial"
                     android:layout_width="match_parent"

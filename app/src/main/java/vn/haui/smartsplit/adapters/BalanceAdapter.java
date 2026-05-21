@@ -173,6 +173,7 @@ public class BalanceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             int mPos = optimizedTransactions.isEmpty() ? position : position - optimizedTransactions.size() - 2;
             User user = members.get(mPos);
             double balance = balances.getOrDefault(user.getUid(), 0.0);
+            double myBalance = balances.getOrDefault(currentUserId, 0.0);
             boolean isMe = user.getUid().equals(currentUserId);
 
             String name = user.getName() != null ? user.getName() : "Người dùng";
@@ -181,20 +182,32 @@ public class BalanceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             vh.viewAvatarBg.setBackgroundColor(AVATAR_COLORS[mPos % AVATAR_COLORS.length]);
 
             if (balance > 1.0) {
-                // Người này ĐANG ĐƯỢC NHẬN TIỀN -> Mình (hoặc ai đó) phải trả họ
+                // Người này ĐANG ĐƯỢC NHẬN TIỀN
                 vh.tvBalanceStatus.setText("Được nhận: " + fmt.format(balance) + "₫");
                 vh.tvBalanceStatus.setTextColor(Color.parseColor("#1CC29F"));
-                vh.btnBalanceAction.setVisibility(isMe ? View.GONE : View.VISIBLE);
-                vh.btnBalanceAction.setText("Tất toán"); // Bạn trả cho họ
-                vh.btnBalanceAction.setOnClickListener(v -> actionListener.onSettleUp(user, balance));
+                
+                // Chỉ hiện "Tất toán" nếu mình đang nợ và họ đang được nhận
+                if (!isMe && myBalance < -1.0) {
+                    vh.btnBalanceAction.setVisibility(View.VISIBLE);
+                    vh.btnBalanceAction.setText("Tất toán");
+                    vh.btnBalanceAction.setOnClickListener(v -> actionListener.onSettleUp(user, balance));
+                } else {
+                    vh.btnBalanceAction.setVisibility(View.GONE);
+                }
             } else if (balance < -1.0) {
-                // Người này ĐANG NỢ TIỀN -> Mình (hoặc ai đó) cần nhắc họ
+                // Người này ĐANG NỢ TIỀN
                 double owe = Math.abs(balance);
                 vh.tvBalanceStatus.setText("Còn nợ: " + fmt.format(owe) + "₫");
                 vh.tvBalanceStatus.setTextColor(Color.parseColor("#E53935"));
-                vh.btnBalanceAction.setVisibility(isMe ? View.GONE : View.VISIBLE);
-                vh.btnBalanceAction.setText("Nhắc nợ"); // Bạn nhắc họ trả
-                vh.btnBalanceAction.setOnClickListener(v -> actionListener.onRemind(user, owe));
+                
+                // Chỉ hiện "Nhắc nợ" nếu mình đang được nhận và họ đang nợ
+                if (!isMe && myBalance > 1.0) {
+                    vh.btnBalanceAction.setVisibility(View.VISIBLE);
+                    vh.btnBalanceAction.setText("Nhắc nợ");
+                    vh.btnBalanceAction.setOnClickListener(v -> actionListener.onRemind(user, owe));
+                } else {
+                    vh.btnBalanceAction.setVisibility(View.GONE);
+                }
             } else {
                 vh.tvBalanceStatus.setText("Đã sòng phẳng");
                 vh.tvBalanceStatus.setTextColor(Color.GRAY);

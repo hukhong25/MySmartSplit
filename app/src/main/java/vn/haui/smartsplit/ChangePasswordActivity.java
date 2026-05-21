@@ -16,7 +16,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class ChangePasswordActivity extends AppCompatActivity {
 
     private TextInputEditText etCurrentPassword, etNewPassword, etConfirmNewPassword;
-    private MaterialButton btnChangePassword;
+    private MaterialButton btnChangePassword, btnCancel;
     private FirebaseAuth mAuth;
 
     @Override
@@ -37,8 +37,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
         etNewPassword = findViewById(R.id.etNewPassword);
         etConfirmNewPassword = findViewById(R.id.etConfirmNewPassword);
         btnChangePassword = findViewById(R.id.btnChangePassword);
+        btnCancel = findViewById(R.id.btnCancel);
 
         btnChangePassword.setOnClickListener(v -> changePassword());
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> finish());
+        }
     }
 
     private void changePassword() {

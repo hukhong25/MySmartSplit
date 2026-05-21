@@ -26,6 +26,7 @@
         <!-- Auth -->
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterActivity" />
+        <activity android:name=".ChangePasswordActivity" />
 
         <!-- Main container with BottomNav -->
         <activity android:name=".HomeContainerActivity" />
@@ -33,6 +34,9 @@
         <!-- Original activities (still accessible for deep-links / back-compat) -->
         <activity android:name=".DashboardActivity" />
         <activity android:name=".GroupsActivity" />
+
+        <!-- Profile -->
+        <activity android:name=".EditProfileActivity" />
 
         <!-- Group flows -->
         <activity android:name=".CreateGroupActivity" />
@@ -42,6 +46,7 @@
         <activity android:name=".SettleUpActivity" />
         <activity android:name=".SettleDetailActivity" />
         <activity android:name=".GroupMembersActivity" />
+        <activity android:name=".NotificationsActivity" />
 
     </application>
 

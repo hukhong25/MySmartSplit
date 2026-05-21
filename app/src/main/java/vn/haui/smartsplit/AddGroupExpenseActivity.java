@@ -1,13 +1,16 @@
 package vn.haui.smartsplit;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import vn.haui.smartsplit.adapters.SplitMemberAdapter;
+import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.User;
 
@@ -34,6 +38,8 @@ public class AddGroupExpenseActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String groupId;
+    private String expenseId; // ID của khoản chi nếu ở chế độ sửa
+    private boolean isEditMode = false;
 
     private final List<User> memberList = new ArrayList<>();
     private final List<String> selectedUserIds = new ArrayList<>();
@@ -46,7 +52,17 @@ public class AddGroupExpenseActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        
         groupId = getIntent().getStringExtra("GROUP_ID");
+        expenseId = getIntent().getStringExtra("EXPENSE_ID");
+        isEditMode = (expenseId != null);
+
+        Toolbar toolbar = findViewById(R.id.toolbarAddExpense);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(isEditMode ? "Sửa khoản chi" : "Thêm khoản chi");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         etExpenseDescription = findViewById(R.id.etExpenseDescription);
         etExpenseAmount = findViewById(R.id.etExpenseAmount);
@@ -54,13 +70,15 @@ public class AddGroupExpenseActivity extends AppCompatActivity {
         rvSplitMembers = findViewById(R.id.rvSplitMembers);
         btnSaveGroupExpense = findViewById(R.id.btnSaveGroupExpense);
 
+        if (isEditMode) {
+            btnSaveGroupExpense.setText("Cập nhật");
+        }
+
         rvSplitMembers.setLayoutManager(new LinearLayoutManager(this));
         splitMemberAdapter = new SplitMemberAdapter(memberList, selectedUserIds);
         rvSplitMembers.setAdapter(splitMemberAdapter);
 
         loadGroupMembers();
-
-        btnSaveGroupExpense.setOnClickListener(v -> saveExpense());
     }
 
     private void loadGroupMembers() {
@@ -71,38 +89,62 @@ public class AddGroupExpenseActivity extends AppCompatActivity {
                     List<String> memberIds = (List<String>) documentSnapshot.get("memberIds");
                     if (memberIds == null || memberIds.isEmpty()) return;
 
-                    // Pre-select tất cả thành viên
-                    selectedUserIds.clear();
-                    selectedUserIds.addAll(memberIds);
-
                     AtomicInteger fetchCount = new AtomicInteger(0);
                     int total = memberIds.size();
 
                     for (String uid : memberIds) {
                         db.collection("users").document(uid).get()
                                 .addOnSuccessListener(userDoc -> {
-                                    String name = userDoc.getString("name");
-                                    String email = userDoc.getString("email");
-                                    if (name == null || name.isEmpty()) {
-                                        name = (email != null) ? email : uid;
+                                    User u = userDoc.toObject(User.class);
+                                    if (u != null) {
+                                        u.setUid(userDoc.getId());
+                                        memberList.add(u);
                                     }
-                                    memberList.add(new User(userDoc.getId(), name, email));
 
                                     if (fetchCount.incrementAndGet() == total) {
                                         updatePayerSpinner();
-                                        splitMemberAdapter.notifyDataSetChanged();
+                                        if (isEditMode) {
+                                            loadExpenseData();
+                                        } else {
+                                            // Mặc định chọn tất cả nếu thêm mới
+                                            selectedUserIds.addAll(memberIds);
+                                            splitMemberAdapter.notifyDataSetChanged();
+                                        }
                                     }
                                 })
                                 .addOnFailureListener(e -> {
                                     if (fetchCount.incrementAndGet() == total) {
                                         updatePayerSpinner();
-                                        splitMemberAdapter.notifyDataSetChanged();
                                     }
                                 });
                     }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi tải thành viên: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                });
+    }
+
+    private void loadExpenseData() {
+        db.collection("expenses").document(expenseId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Expense expense = documentSnapshot.toObject(Expense.class);
+                    if (expense != null) {
+                        etExpenseDescription.setText(expense.getDescription());
+                        etExpenseAmount.setText(String.valueOf((long)expense.getAmount()));
+                        
+                        // Chọn người trả
+                        for (int i = 0; i < memberList.size(); i++) {
+                            if (memberList.get(i).getUid().equals(expense.getPayerId())) {
+                                spPayer.setSelection(i);
+                                break;
+                            }
+                        }
+
+                        // Chọn người chia tiền
+                        selectedUserIds.clear();
+                        if (expense.getSplitDetails() != null) {
+                            selectedUserIds.addAll(expense.getSplitDetails().keySet());
+                        }
+                        splitMemberAdapter.notifyDataSetChanged();
+                    }
+                });
     }
 
     private void updatePayerSpinner() {
@@ -115,14 +157,17 @@ public class AddGroupExpenseActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spPayer.setAdapter(adapter);
 
-        // Mặc định chọn user hiện tại
-        String currentUid = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "";
-        for (int i = 0; i < memberList.size(); i++) {
-            if (memberList.get(i).getUid().equals(currentUid)) {
-                spPayer.setSelection(i);
-                break;
+        if (!isEditMode) {
+            String currentUid = mAuth.getUid();
+            for (int i = 0; i < memberList.size(); i++) {
+                if (memberList.get(i).getUid().equals(currentUid)) {
+                    spPayer.setSelection(i);
+                    break;
+                }
             }
         }
+
+        btnSaveGroupExpense.setOnClickListener(v -> saveExpense());
     }
 
     private void saveExpense() {
@@ -134,47 +179,58 @@ public class AddGroupExpenseActivity extends AppCompatActivity {
             return;
         }
         if (selectedUserIds.isEmpty()) {
-            Toast.makeText(this, "Vui lòng chọn ít nhất một người để chia tiền", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn ít nhất một người chia", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        double amount;
-        try {
-            amount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Số tiền không hợp lệ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int payerIndex = spPayer.getSelectedItemPosition();
-        if (payerIndex < 0 || payerIndex >= memberList.size()) {
-            Toast.makeText(this, "Vui lòng chọn người trả tiền", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        User payer = memberList.get(payerIndex);
-        double sharePerPerson = amount / selectedUserIds.size();
+        double amount = Double.parseDouble(amountStr);
+        User payer = memberList.get(spPayer.getSelectedItemPosition());
+        double share = amount / selectedUserIds.size();
 
         Map<String, Double> splitDetails = new HashMap<>();
-        for (String uid : selectedUserIds) {
-            splitDetails.put(uid, sharePerPerson);
-        }
+        for (String uid : selectedUserIds) splitDetails.put(uid, share);
 
-        String expenseId = db.collection("expenses").document().getId();
-        Expense expense = new Expense(expenseId, desc, amount, payer.getUid(),
-                groupId, System.currentTimeMillis(), splitDetails);
+        String id = isEditMode ? expenseId : db.collection("expenses").document().getId();
+        Expense expense = new Expense(id, desc, amount, payer.getUid(), groupId, System.currentTimeMillis(), splitDetails);
         expense.setPayerName(payer.getName());
 
         btnSaveGroupExpense.setEnabled(false);
-        db.collection("expenses").document(expenseId)
-                .set(expense)
+        db.collection("expenses").document(id).set(expense)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Đã thêm chi tiêu nhóm thành công!", Toast.LENGTH_SHORT).show();
+                    notifyInvolvedMembers(expense, isEditMode);
+                    Toast.makeText(this, isEditMode ? "Cập nhật khoản chi thành công" : "Thêm khoản chi thành công", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSaveGroupExpense.setEnabled(true);
                     Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void notifyInvolvedMembers(Expense expense, boolean isUpdate) {
+        String currentUid = mAuth.getUid();
+        String title = isUpdate ? "Cập nhật chi tiêu" : "Khoản chi mới";
+        String content = expense.getPayerName() + (isUpdate ? " đã cập nhật: " : " đã thêm: ") + expense.getDescription() + " (" + (long)expense.getAmount() + " VND)";
+
+        for (String uid : expense.getSplitDetails().keySet()) {
+            if (uid.equals(currentUid)) continue; // Don't notify self
+
+            String notifId = db.collection("notifications").document().getId();
+            AppNotification notif = new AppNotification(
+                    notifId,
+                    uid,
+                    title,
+                    content,
+                    "EXPENSE_ADDED",
+                    expense.getId()
+            );
+            db.collection("notifications").document(notifId).set(notif);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) { finish(); return true; }
+        return super.onOptionsItemSelected(item);
     }
 }
