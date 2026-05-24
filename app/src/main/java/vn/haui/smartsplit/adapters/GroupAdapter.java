@@ -68,12 +68,13 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         // Sử dụng chuỗi định dạng động cho số lượng thành viên
         holder.tvMemberCount.setText(ctx.getString(R.string.group_member_count_format, memberCount));
 
-        // Default balance display (no per-user balance in Group model currently)
-        holder.tvGroupBalance.setText(ctx.getString(R.string.default_currency_zero));
-        holder.tvGroupStatus.setText(ctx.getString(R.string.status_settled_up));
-        holder.tvGroupStatus.setTextColor(Color.parseColor("#9E9E9E"));
-        if (holder.viewStatusDot != null) {
-            holder.viewStatusDot.setBackgroundColor(Color.parseColor("#9E9E9E"));
+        // Theo yêu cầu: Ẩn phần dư nợ và trạng thái (0đ)
+        // Ẩn toàn bộ layout chứa thông tin này và cả đường kẻ ngang (divider)
+        if (holder.layoutGroupBalance != null) {
+            holder.layoutGroupBalance.setVisibility(View.GONE);
+        }
+        if (holder.viewDivider != null) {
+            holder.viewDivider.setVisibility(View.GONE);
         }
 
         // Rotate icon background color
@@ -125,18 +126,17 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
     };
 
     static class GroupViewHolder extends RecyclerView.ViewHolder {
-        TextView tvGroupName, tvMemberCount, tvGroupBalance, tvGroupStatus;
+        TextView tvGroupName, tvMemberCount;
         ImageView ivGroupIcon;
-        View viewStatusDot;
+        View layoutGroupBalance, viewDivider;
 
         public GroupViewHolder(@NonNull View itemView) {
             super(itemView);
             tvGroupName    = itemView.findViewById(R.id.tvGroupName);
             tvMemberCount  = itemView.findViewById(R.id.tvMemberCount);
-            tvGroupBalance = itemView.findViewById(R.id.tvGroupBalance);
-            tvGroupStatus  = itemView.findViewById(R.id.tvGroupStatus);
             ivGroupIcon    = itemView.findViewById(R.id.ivGroupIcon);
-            viewStatusDot  = itemView.findViewById(R.id.viewStatusDot);
+            layoutGroupBalance = itemView.findViewById(R.id.layoutGroupBalance);
+            viewDivider = itemView.findViewById(R.id.viewDivider);
         }
     }
 }

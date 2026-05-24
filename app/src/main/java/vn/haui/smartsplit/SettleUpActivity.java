@@ -17,21 +17,16 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import vn.haui.smartsplit.models.AppNotification;
-import vn.haui.smartsplit.models.Expense;
 import vn.haui.smartsplit.models.User;
+import vn.haui.smartsplit.viewmodels.SettleUpViewModel;
 
 public class SettleUpActivity extends BaseActivity {
 
@@ -39,10 +34,9 @@ public class SettleUpActivity extends BaseActivity {
     private EditText etSettleAmount;
     private Button btnConfirmSettle, btnPickImage;
     private ImageView ivProofPreview;
+    private View progressBar;
 
-    private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
-    private FirebaseStorage storage;
+    private SettleUpViewModel viewModel;
     private String groupId;
     private Uri imageUri;
 
@@ -64,10 +58,8 @@ public class SettleUpActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settle_up);
 
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
-        storage = FirebaseStorage.getInstance();
         groupId = getIntent().getStringExtra("GROUP_ID");
+        viewModel = new ViewModelProvider(this).get(SettleUpViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbarSettleUp);
         setSupportActionBar(toolbar);
@@ -82,8 +74,11 @@ public class SettleUpActivity extends BaseActivity {
         btnConfirmSettle = findViewById(R.id.btnConfirmSettle);
         btnPickImage = findViewById(R.id.btnPickImage);
         ivProofPreview = findViewById(R.id.ivProofPreview);
+        progressBar = findViewById(R.id.progressBar);
 
-        loadGroupMembers();
+        observeViewModel();
+
+        viewModel.loadMembers(groupId);
 
         btnPickImage.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -93,24 +88,30 @@ public class SettleUpActivity extends BaseActivity {
         btnConfirmSettle.setOnClickListener(v -> confirmSettle());
     }
 
-    private void loadGroupMembers() {
-        if (groupId == null) return;
-        db.collection("groups").document(groupId).get().addOnSuccessListener(doc -> {
-            @SuppressWarnings("unchecked")
-            List<String> memberIds = (List<String>) doc.get("memberIds");
-            if (memberIds == null) return;
-            AtomicInteger count = new AtomicInteger(0);
+    private void observeViewModel() {
+        viewModel.getMemberList().observe(this, users -> {
             memberList.clear();
-            for (String uid : memberIds) {
-                db.collection("users").document(uid).get().addOnSuccessListener(uDoc -> {
-                    User u = uDoc.toObject(User.class);
-                    if (u != null) { u.setUid(uDoc.getId()); memberList.add(u); }
-                    if (count.incrementAndGet() == memberIds.size()) {
-                        updateSpinners();
-                        handleSuggestions();
-                    }
-                });
+            memberList.addAll(users);
+            updateSpinners();
+            handleSuggestions();
+        });
+
+        viewModel.getSaveSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, getString(R.string.toast_settle_request_sent), Toast.LENGTH_SHORT).show();
+                finish();
             }
+        });
+
+        viewModel.getError().observe(this, err -> {
+            if (err != null) {
+                Toast.makeText(this, getString(R.string.toast_error_prefix, err), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getIsLoading().observe(this, loading -> {
+            if (progressBar != null) progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+            btnConfirmSettle.setEnabled(!loading);
         });
     }
 
@@ -136,7 +137,7 @@ public class SettleUpActivity extends BaseActivity {
         spFromUser.setAdapter(adapter);
         spToUser.setAdapter(adapter);
 
-        String currentUid = mAuth.getUid();
+        String currentUid = FirebaseAuth.getInstance().getUid();
         for (int i = 0; i < memberList.size(); i++) {
             if (memberList.get(i).getUid().equals(currentUid)) {
                 spFromUser.setSelection(i);
@@ -164,62 +165,21 @@ public class SettleUpActivity extends BaseActivity {
             return;
         }
 
-        btnConfirmSettle.setEnabled(false);
+        String base64Image = null;
         if (imageUri != null) {
-            String base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), imageUri, 600);
+            base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), imageUri, 600);
             if (base64Image == null) {
-                btnConfirmSettle.setEnabled(true);
                 Toast.makeText(this, getString(R.string.toast_image_processing_error), Toast.LENGTH_SHORT).show();
                 return;
             }
-            saveSettlement(from, to, amount, base64Image);
-        } else {
-            saveSettlement(from, to, amount, null);
         }
-    }
 
-    private void saveSettlement(User from, User to, double amount, String imageUrl) {
-        Map<String, Double> split = new HashMap<>();
-        split.put(to.getUid(), amount);
-
-        String id = db.collection("expenses").document().getId();
-        Expense settlement = new Expense();
-        settlement.setId(id);
-        settlement.setDescription(getString(R.string.settle_description_format, from.getName(), to.getName()));
-        settlement.setAmount(amount);
-        settlement.setPayerId(from.getUid());
-        settlement.setPayerName(from.getName());
-        settlement.setGroupId(groupId);
-        settlement.setTimestamp(System.currentTimeMillis());
-        settlement.setSplitDetails(split);
-        settlement.setProofImageUrl(imageUrl);
-        settlement.setSettlement(true);
-        settlement.setStatus(Expense.STATUS_PENDING);
-
-        db.collection("expenses").document(id).set(settlement).addOnSuccessListener(aVoid -> {
-            sendNotification(to.getUid(), from.getName(), amount, id);
-            Toast.makeText(this, getString(R.string.toast_settle_request_sent), Toast.LENGTH_SHORT).show();
-            finish();
-        }).addOnFailureListener(e -> {
-            btnConfirmSettle.setEnabled(true);
-            Toast.makeText(this, getString(R.string.toast_firestore_save_error), Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    private void sendNotification(String receiverId, String senderName, double amount, String expenseId) {
-        String title = getString(R.string.notif_title_new_payment_request);
-        String content = getString(R.string.notif_content_payment_request_format, senderName, (long) amount);
-
-        String notifId = db.collection("notifications").document().getId();
-        AppNotification notif = new AppNotification(
-                notifId,
-                receiverId,
-                title,
-                content,
-                "PAYMENT_REQUEST",
-                expenseId
+        viewModel.confirmSettle(
+                from, to, amount, base64Image, groupId,
+                getString(R.string.settle_description_format),
+                getString(R.string.notif_title_new_payment_request),
+                getString(R.string.notif_content_payment_request_format)
         );
-        db.collection("notifications").document(notifId).set(notif);
     }
 
     @Override

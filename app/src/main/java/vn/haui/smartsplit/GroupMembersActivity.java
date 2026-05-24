@@ -4,31 +4,36 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import vn.haui.smartsplit.adapters.MemberAdapter;
 import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
+import vn.haui.smartsplit.viewmodels.GroupMembersViewModel;
 
 public class GroupMembersActivity extends BaseActivity {
 
     private RecyclerView rvMembers;
     private FloatingActionButton fabAddMember;
-    private FirebaseFirestore db;
+    private ProgressBar pbLoading; // Đổi tên biến để tránh trùng lặp/xung đột với BaseActivity
     private String groupId, currentUserId;
-    private Group currentGroup;
+    private GroupMembersViewModel viewModel;
     private final List<User> memberList = new ArrayList<>();
     private MemberAdapter adapter;
 
@@ -37,12 +42,11 @@ public class GroupMembersActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_members);
 
-        db = FirebaseFirestore.getInstance();
         currentUserId = FirebaseAuth.getInstance().getUid();
         groupId = getIntent().getStringExtra("GROUP_ID");
+        viewModel = new ViewModelProvider(this).get(GroupMembersViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbarMembers);
-        toolbar.getTop();
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(getString(R.string.title_members));
@@ -51,14 +55,17 @@ public class GroupMembersActivity extends BaseActivity {
 
         rvMembers = findViewById(R.id.rvMembers);
         fabAddMember = findViewById(R.id.fabAddMember);
+        pbLoading = findViewById(R.id.progressBar); // Sử dụng ID từ XML
 
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
-
-        loadGroupAndMembers();
+        
+        observeViewModel();
+        viewModel.init(groupId);
 
         fabAddMember.setOnClickListener(v -> {
+            Group currentGroup = viewModel.getGroup().getValue();
             if (currentGroup != null) {
-                if (currentUserId.equals(currentGroup.getAdminId())) {
+                if (currentUserId != null && currentUserId.equals(currentGroup.getAdminId())) {
                     showAddMemberByEmailDialog();
                 } else {
                     new AlertDialog.Builder(this)
@@ -71,9 +78,78 @@ public class GroupMembersActivity extends BaseActivity {
         });
     }
 
+    private void observeViewModel() {
+        viewModel.getGroup().observe(this, group -> {
+            if (group != null) {
+                invalidateOptionsMenu();
+            }
+        });
+
+        viewModel.getMembers().observe(this, users -> {
+            memberList.clear();
+            memberList.addAll(users);
+            updateUI();
+        });
+
+        viewModel.getActionSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Thao tác thành công!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getDissolveSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, getString(R.string.toast_dissolve_group_success), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, HomeContainerActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        viewModel.getError().observe(this, err -> {
+            if (err != null) {
+                Toast.makeText(this, getString(R.string.toast_error_prefix, err), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getIsLoading().observe(this, loading -> {
+            if (pbLoading != null) {
+                pbLoading.setVisibility(loading ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
+
+    private void updateUI() {
+        Group currentGroup = viewModel.getGroup().getValue();
+        if (currentGroup == null) return;
+
+        adapter = new MemberAdapter(memberList, currentGroup.getAdminId(), currentUserId, new MemberAdapter.OnMemberActionListener() {
+            @Override
+            public void onEditMember(User user) {
+                if (currentUserId != null && currentUserId.equals(currentGroup.getAdminId())) {
+                    showEditMemberRoleDialog(user);
+                } else {
+                    Toast.makeText(GroupMembersActivity.this, getString(R.string.toast_permission_admin_edit_only), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onRemoveMember(User user) {
+                if (currentUserId != null && currentUserId.equals(currentGroup.getAdminId())) {
+                    confirmRemove(user);
+                } else {
+                    Toast.makeText(GroupMembersActivity.this, getString(R.string.toast_permission_admin_remove_only), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        rvMembers.setAdapter(adapter);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (currentGroup != null && currentUserId.equals(currentGroup.getAdminId())) {
+        Group currentGroup = viewModel.getGroup().getValue();
+        if (currentGroup != null && currentUserId != null && currentUserId.equals(currentGroup.getAdminId())) {
             MenuItem item = menu.add(Menu.NONE, 101, Menu.NONE, getString(R.string.menu_dissolve_group));
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
@@ -96,23 +172,10 @@ public class GroupMembersActivity extends BaseActivity {
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.menu_dissolve_group))
                 .setMessage(getString(R.string.dialog_dissolve_group_msg))
-                .setPositiveButton(getString(R.string.btn_dissolve), (dialog, which) -> dissolveGroup())
+                .setPositiveButton(getString(R.string.btn_dissolve), (dialog, which) -> viewModel.dissolveGroup())
                 .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
-    }
-
-    private void dissolveGroup() {
-        db.collection("groups").document(groupId)
-                .update("memberIds", new ArrayList<String>())
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, getString(R.string.toast_dissolve_group_success), Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(this, HomeContainerActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
     }
 
     private void showAddMemberByEmailDialog() {
@@ -126,90 +189,16 @@ public class GroupMembersActivity extends BaseActivity {
                 .setView(etEmail)
                 .setPositiveButton(getString(R.string.dialog_action_add), (dialog, which) -> {
                     String email = etEmail.getText().toString().trim();
-                    if (!email.isEmpty()) searchAndAddUser(email);
+                    if (!email.isEmpty()) viewModel.addMember(email);
                 })
                 .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
     }
 
-    private void searchAndAddUser(String email) {
-        db.collection("users").whereEqualTo("email", email).get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            addUserToGroup(doc.getId(), email);
-                            return;
-                        }
-                    } else {
-                        Toast.makeText(this, getString(R.string.toast_user_not_found), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void addUserToGroup(String uid, String email) {
-        if (currentGroup.getMemberIds().contains(uid)) {
-            Toast.makeText(this, getString(R.string.toast_user_already_in_group), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        db.collection("groups").document(groupId)
-                .update("memberIds", FieldValue.arrayUnion(uid))
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_added_member_success_format, email), Toast.LENGTH_SHORT).show());
-    }
-
-    private void loadGroupAndMembers() {
-        db.collection("groups").document(groupId).addSnapshotListener((snapshot, e) -> {
-            if (snapshot != null && snapshot.exists()) {
-                currentGroup = snapshot.toObject(Group.class);
-                if (currentGroup != null) {
-                    invalidateOptionsMenu();
-                    fetchMemberDetails(currentGroup.getMemberIds());
-                }
-            }
-        });
-    }
-
-    private void fetchMemberDetails(List<String> ids) {
-        memberList.clear();
-        if (ids == null || ids.isEmpty()) {
-            if (adapter != null) adapter.notifyDataSetChanged();
-            return;
-        }
-        for (String uid : ids) {
-            db.collection("users").document(uid).get().addOnSuccessListener(doc -> {
-                User u = doc.toObject(User.class);
-                if (u != null) {
-                    u.setUid(doc.getId());
-                    memberList.add(u);
-                    if (memberList.size() == ids.size()) updateUI();
-                }
-            });
-        }
-    }
-
-    private void updateUI() {
-        adapter = new MemberAdapter(memberList, currentGroup.getAdminId(), currentUserId, new MemberAdapter.OnMemberActionListener() {
-            @Override
-            public void onEditMember(User user) {
-                if (currentUserId.equals(currentGroup.getAdminId())) {
-                    showEditMemberRoleDialog(user);
-                } else {
-                    Toast.makeText(GroupMembersActivity.this, getString(R.string.toast_permission_admin_edit_only), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onRemoveMember(User user) {
-                if (currentUserId.equals(currentGroup.getAdminId())) {
-                    confirmRemove(user);
-                } else {
-                    Toast.makeText(GroupMembersActivity.this, getString(R.string.toast_permission_admin_remove_only), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        rvMembers.setAdapter(adapter);
-    }
-
     private void showEditMemberRoleDialog(User user) {
+        Group currentGroup = viewModel.getGroup().getValue();
+        if (currentGroup == null) return;
+
         if (user.getUid().equals(currentGroup.getAdminId())) {
             Toast.makeText(this, getString(R.string.toast_user_already_admin), Toast.LENGTH_SHORT).show();
             return;
@@ -218,34 +207,18 @@ public class GroupMembersActivity extends BaseActivity {
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.dialog_transfer_admin_title))
                 .setMessage(getString(R.string.dialog_transfer_admin_msg_format, user.getName()))
-                .setPositiveButton(getString(R.string.dialog_action_confirm_transfer), (dialog, which) -> transferAdminRole(user.getUid()))
+                .setPositiveButton(getString(R.string.dialog_action_confirm_transfer), (dialog, which) -> viewModel.transferAdmin(user.getUid()))
                 .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
-    }
-
-    private void transferAdminRole(String newAdminUid) {
-        db.collection("groups").document(groupId)
-                .update("adminId", newAdminUid)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, getString(R.string.toast_transfer_admin_success), Toast.LENGTH_SHORT).show();
-                    invalidateOptionsMenu();
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
     }
 
     private void confirmRemove(User user) {
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.dialog_remove_member_title))
                 .setMessage(getString(R.string.dialog_remove_member_msg_format, user.getName()))
-                .setPositiveButton(getString(R.string.btn_remove), (dialog, which) -> removeMember(user.getUid()))
+                .setPositiveButton(getString(R.string.btn_remove), (dialog, which) -> viewModel.removeMember(user.getUid()))
                 .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
-    }
-
-    private void removeMember(String uid) {
-        db.collection("groups").document(groupId)
-                .update("memberIds", FieldValue.arrayRemove(uid))
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_remove_member_success), Toast.LENGTH_SHORT).show());
     }
 
     @Override

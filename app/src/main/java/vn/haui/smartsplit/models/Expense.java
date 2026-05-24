@@ -14,24 +14,16 @@ public class Expense {
     private String payerName;
     private String groupId;
     private long timestamp;
-    private Map<String, Double> splitDetails;
+    private Map<String, Object> splitDetails; // Để Object để tránh lỗi ép kiểu từ Firestore Long/Double
     private String proofImageUrl;
-    private String status; // PENDING, COMPLETED, REJECTED
+    private String status; 
     private boolean isSettlement;
+    private String category;
 
-    public Expense() {}
-
-    public Expense(String id, String description, double amount, String payerId, String groupId,
-                   long timestamp, Map<String, Double> splitDetails) {
-        this.id = id;
-        this.description = description;
-        this.amount = amount;
-        this.payerId = payerId;
-        this.groupId = groupId;
-        this.timestamp = timestamp;
-        this.splitDetails = splitDetails;
-        this.status = STATUS_COMPLETED; // Default for normal expenses
+    public Expense() {
+        this.status = STATUS_COMPLETED;
         this.isSettlement = false;
+        this.category = "Khác";
     }
 
     public String getId() { return id; }
@@ -48,12 +40,14 @@ public class Expense {
     public void setGroupId(String groupId) { this.groupId = groupId; }
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    public Map<String, Double> getSplitDetails() { return splitDetails; }
-    public void setSplitDetails(Map<String, Double> splitDetails) { this.splitDetails = splitDetails; }
+    public Map<String, Object> getSplitDetails() { return splitDetails; }
+    public void setSplitDetails(Map<String, Object> splitDetails) { this.splitDetails = splitDetails; }
     public String getProofImageUrl() { return proofImageUrl; }
     public void setProofImageUrl(String proofImageUrl) { this.proofImageUrl = proofImageUrl; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public boolean isSettlement() { return isSettlement; }
     public void setSettlement(boolean settlement) { isSettlement = settlement; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }

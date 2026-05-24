@@ -97,7 +97,14 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:text="@string/login_btn"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginBottom="12dp"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"/>
 
         <!-- Register link -->
         <LinearLayout

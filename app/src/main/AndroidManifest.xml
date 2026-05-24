@@ -32,7 +32,7 @@
         <activity android:name=".HomeContainerActivity" />
 
         <!-- Original activities (still accessible for deep-links / back-compat) -->
-        <activity android:name=".DashboardActivity" />
+
         <activity android:name=".GroupsActivity" />
 
         <!-- Profile -->
@@ -42,7 +42,7 @@
         <activity android:name=".CreateGroupActivity" />
         <activity android:name=".GroupDetailsActivity" />
         <activity android:name=".AddGroupExpenseActivity" />
-        <activity android:name=".AddTransactionActivity" />
+
         <activity android:name=".SettleUpActivity" />
         <activity android:name=".SettleDetailActivity" />
         <activity android:name=".GroupMembersActivity" />

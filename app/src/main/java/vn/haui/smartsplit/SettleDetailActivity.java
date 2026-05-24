@@ -11,15 +11,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Locale;
 import java.util.Map;
 
-import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
+import vn.haui.smartsplit.viewmodels.SettleDetailViewModel;
 
 public class SettleDetailActivity extends BaseActivity {
 
@@ -28,19 +27,16 @@ public class SettleDetailActivity extends BaseActivity {
     private LinearLayout layoutActionButtons;
     private Button btnAccept, btnReject;
 
-    private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
+    private SettleDetailViewModel viewModel;
     private String expenseId;
-    private Expense currentExpense;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settle_detail);
 
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
         expenseId = getIntent().getStringExtra("EXPENSE_ID");
+        viewModel = new ViewModelProvider(this).get(SettleDetailViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbarSettleDetail);
         setSupportActionBar(toolbar);
@@ -58,27 +54,37 @@ public class SettleDetailActivity extends BaseActivity {
         btnAccept = findViewById(R.id.btnAccept);
         btnReject = findViewById(R.id.btnReject);
 
-        loadExpenseDetail();
+        observeViewModel();
+        viewModel.loadExpense(expenseId);
     }
 
-    private void loadExpenseDetail() {
-        if (expenseId == null) return;
+    private void observeViewModel() {
+        viewModel.getExpense().observe(this, expense -> {
+            if (expense != null) {
+                displayDetail(expense);
+            }
+        });
 
-        db.collection("expenses").document(expenseId).addSnapshotListener((doc, error) -> {
-            if (error != null || doc == null) return;
-            currentExpense = doc.toObject(Expense.class);
-            if (currentExpense != null) {
-                displayDetail();
+        viewModel.getStatusUpdateSuccess().observe(this, msg -> {
+            if (msg != null) {
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+
+        viewModel.getError().observe(this, err -> {
+            if (err != null) {
+                Toast.makeText(this, getString(R.string.toast_error_prefix, err), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void displayDetail() {
-        tvDetailDescription.setText(currentExpense.getDescription());
-        tvDetailPayer.setText(getString(R.string.detail_sender_format, currentExpense.getPayerName()));
-        tvDetailAmount.setText(getString(R.string.currency_vnd_format, currentExpense.getAmount()));
+    private void displayDetail(Expense expense) {
+        tvDetailDescription.setText(expense.getDescription());
+        tvDetailPayer.setText(getString(R.string.detail_sender_format, expense.getPayerName()));
+        tvDetailAmount.setText(getString(R.string.currency_vnd_format, expense.getAmount()));
 
-        String status = currentExpense.getStatus();
+        String status = expense.getStatus();
         if (Expense.STATUS_PENDING.equals(status)) {
             tvDetailStatus.setText(getString(R.string.detail_status_pending));
             tvDetailStatus.setTextColor(android.graphics.Color.parseColor("#FFA500"));
@@ -90,15 +96,18 @@ public class SettleDetailActivity extends BaseActivity {
             tvDetailStatus.setTextColor(android.graphics.Color.RED);
         }
 
-        if (currentExpense.getProofImageUrl() != null && !currentExpense.getProofImageUrl().isEmpty()) {
+        if (expense.getProofImageUrl() != null && !expense.getProofImageUrl().isEmpty()) {
             ivDetailProof.setVisibility(View.VISIBLE);
-            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, currentExpense.getProofImageUrl(), ivDetailProof, 0);
+            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, expense.getProofImageUrl(), ivDetailProof, 0);
         } else {
             ivDetailProof.setVisibility(View.GONE);
         }
 
-        String currentUid = mAuth.getUid();
-        Map<String, Double> split = currentExpense.getSplitDetails();
+        String currentUid = FirebaseAuth.getInstance().getUid();
+        
+        // FIXED: Change from Map<String, Double> to Map<String, Object> 
+        // to match the refactored Expense model.
+        Map<String, Object> split = expense.getSplitDetails();
         boolean isReceiver = split != null && split.containsKey(currentUid);
 
         if (Expense.STATUS_PENDING.equals(status) && isReceiver) {
@@ -107,51 +116,27 @@ public class SettleDetailActivity extends BaseActivity {
             layoutActionButtons.setVisibility(View.GONE);
         }
 
-        btnAccept.setOnClickListener(v -> updateStatus(Expense.STATUS_COMPLETED));
-        btnReject.setOnClickListener(v -> updateStatus(Expense.STATUS_REJECTED));
-    }
-
-    private void updateStatus(String newStatus) {
-        db.collection("expenses").document(expenseId)
-                .update("status", newStatus)
-                .addOnSuccessListener(aVoid -> {
-                    createResponseNotification(newStatus);
-                    String msg = newStatus.equals(Expense.STATUS_COMPLETED)
-                            ? getString(R.string.toast_payment_accepted)
-                            : getString(R.string.toast_payment_rejected);
-                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-                    finish();
-                });
-    }
-
-    private void createResponseNotification(String status) {
-        if (currentExpense == null) return;
-        String senderId = currentExpense.getPayerId();
-        String receiverName = mAuth.getCurrentUser().getDisplayName();
-        if (receiverName == null || receiverName.isEmpty()) {
-            receiverName = getString(R.string.default_receiver_name);
-        }
-
-        String title = status.equals(Expense.STATUS_COMPLETED)
-                ? getString(R.string.notif_title_payment_accepted)
-                : getString(R.string.notif_title_payment_rejected);
-
-        String contentFormat = status.equals(Expense.STATUS_COMPLETED)
-                ? getString(R.string.notif_content_payment_accepted_format)
-                : getString(R.string.notif_content_payment_rejected_format);
-
-        String content = String.format(contentFormat, receiverName, (long) currentExpense.getAmount());
-
-        String notifId = db.collection("notifications").document().getId();
-        AppNotification notif = new AppNotification(
-                notifId,
-                senderId,
-                title,
-                content,
-                "PAYMENT_RESPONSE",
-                expenseId
-        );
-        db.collection("notifications").document(notifId).set(notif);
+        btnAccept.setOnClickListener(v -> viewModel.updateStatus(
+                Expense.STATUS_COMPLETED,
+                getString(R.string.toast_payment_accepted),
+                getString(R.string.toast_payment_rejected),
+                getString(R.string.notif_title_payment_accepted),
+                getString(R.string.notif_title_payment_rejected),
+                getString(R.string.notif_content_payment_accepted_format),
+                getString(R.string.notif_content_payment_rejected_format),
+                getString(R.string.default_receiver_name)
+        ));
+        
+        btnReject.setOnClickListener(v -> viewModel.updateStatus(
+                Expense.STATUS_REJECTED,
+                getString(R.string.toast_payment_accepted),
+                getString(R.string.toast_payment_rejected),
+                getString(R.string.notif_title_payment_accepted),
+                getString(R.string.notif_title_payment_rejected),
+                getString(R.string.notif_content_payment_accepted_format),
+                getString(R.string.notif_content_payment_rejected_format),
+                getString(R.string.default_receiver_name)
+        ));
     }
 
     @Override

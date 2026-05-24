@@ -82,16 +82,27 @@ public class GroupExpenseAdapter extends RecyclerView.Adapter<GroupExpenseAdapte
             holder.btnOptions.setVisibility(View.VISIBLE);
             holder.tvShare.setVisibility(View.VISIBLE);
 
-            Map<String, Double> split = expense.getSplitDetails();
+            // Sửa lỗi: Sử dụng Map<String, Object> và ép kiểu an toàn
+            Map<String, Object> split = expense.getSplitDetails();
             boolean isPayer = currentUserId != null && currentUserId.equals(expense.getPayerId());
 
             if (isPayer) {
-                double myShare = (split != null && split.containsKey(currentUserId)) ? split.get(currentUserId) : 0;
+                double myShare = 0;
+                if (split != null && split.containsKey(currentUserId)) {
+                    try {
+                        Object val = split.get(currentUserId);
+                        if (val != null) myShare = Double.parseDouble(val.toString());
+                    } catch (Exception ignored) {}
+                }
                 double othersOwe = expense.getAmount() - myShare;
                 holder.tvShare.setText(ctx.getString(R.string.expense_lend_format, othersOwe));
                 holder.tvShare.setTextColor(Color.parseColor("#2E7D32"));
             } else if (split != null && split.containsKey(currentUserId)) {
-                double myDebt = split.get(currentUserId);
+                double myDebt = 0;
+                try {
+                    Object val = split.get(currentUserId);
+                    if (val != null) myDebt = Double.parseDouble(val.toString());
+                } catch (Exception ignored) {}
                 holder.tvShare.setText(ctx.getString(R.string.expense_owe_format, myDebt));
                 holder.tvShare.setTextColor(Color.parseColor("#E91E63"));
             } else {

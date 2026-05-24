@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,21 +17,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import vn.haui.smartsplit.adapters.BalanceAdapter;
 import vn.haui.smartsplit.adapters.GroupExpenseAdapter;
 import vn.haui.smartsplit.models.AppNotification;
 import vn.haui.smartsplit.models.Expense;
-import vn.haui.smartsplit.models.Group;
 import vn.haui.smartsplit.models.User;
+import vn.haui.smartsplit.viewmodels.GroupDetailsViewModel;
 
 public class GroupDetailsActivity extends BaseActivity implements
         BalanceAdapter.OnActionClickListener,
@@ -40,10 +37,7 @@ public class GroupDetailsActivity extends BaseActivity implements
     private TabLayout tabLayoutGroup;
     private FloatingActionButton fabAddGroupExpense;
     private String groupId, groupName;
-    private String joinCode;
-    private FirebaseFirestore db;
-    private ListenerRegistration expenseListener;
-    private ListenerRegistration groupListener;
+    private GroupDetailsViewModel viewModel;
     private int currentTab = 0;
 
     @Override
@@ -51,9 +45,10 @@ public class GroupDetailsActivity extends BaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_details);
 
-        db = FirebaseFirestore.getInstance();
         groupId = getIntent().getStringExtra("GROUP_ID");
         groupName = getIntent().getStringExtra("GROUP_NAME");
+
+        viewModel = new ViewModelProvider(this).get(GroupDetailsViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbarGroupDetails);
         setSupportActionBar(toolbar);
@@ -68,71 +63,68 @@ public class GroupDetailsActivity extends BaseActivity implements
 
         rvGroupContent.setLayoutManager(new LinearLayoutManager(this));
 
-        fetchGroupDetails();
+        setupTabs();
+        observeViewModel();
 
+        viewModel.init(groupId);
+    }
+
+    private void setupTabs() {
         tabLayoutGroup.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 currentTab = tab.getPosition();
-                refreshCurrentTab();
+                updateTabUI();
             }
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
             @Override public void onTabReselected(TabLayout.Tab tab) {}
         });
+        updateTabUI();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refreshCurrentTab();
-    }
-
-    private void refreshCurrentTab() {
-        removeListeners();
+    private void updateTabUI() {
         if (currentTab == 0) {
-            showExpenses();
             fabAddGroupExpense.setImageResource(android.R.drawable.ic_input_add);
             fabAddGroupExpense.setOnClickListener(v -> openAddExpense());
+            renderExpenses(viewModel.getExpenses().getValue());
         } else {
-            showBalances();
             fabAddGroupExpense.setImageResource(android.R.drawable.ic_menu_send);
             fabAddGroupExpense.setOnClickListener(v -> openSettleUp());
+            renderBalances(viewModel.getMembers().getValue(), viewModel.getBalances().getValue());
         }
     }
 
-    private void fetchGroupDetails() {
-        if (groupListener != null) groupListener.remove();
-        groupListener = db.collection("groups").document(groupId)
-                .addSnapshotListener((documentSnapshot, error) -> {
-                    if (error != null || documentSnapshot == null) return;
-                    Group group = documentSnapshot.toObject(Group.class);
-                    if (group != null) {
-                        joinCode = group.getJoinCode();
-                        if (getSupportActionBar() != null) {
-                            getSupportActionBar().setSubtitle(getString(R.string.group_subtitle_code_prefix, joinCode));
-                        }
-                    }
-                });
+    private void observeViewModel() {
+        viewModel.getGroup().observe(this, group -> {
+            if (group != null && getSupportActionBar() != null) {
+                getSupportActionBar().setSubtitle(getString(R.string.group_subtitle_code_prefix, group.getJoinCode()));
+            }
+        });
+
+        viewModel.getExpenses().observe(this, expenses -> {
+            if (currentTab == 0) renderExpenses(expenses);
+        });
+
+        viewModel.getBalances().observe(this, balMap -> {
+            if (currentTab == 1) renderBalances(viewModel.getMembers().getValue(), balMap);
+        });
+
+        viewModel.getError().observe(this, error -> {
+            if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        });
     }
 
-    private void showExpenses() {
-        List<Expense> expenses = new ArrayList<>();
-        GroupExpenseAdapter adapter = new GroupExpenseAdapter(expenses, this);
+    private void renderExpenses(List<Expense> expenses) {
+        if (expenses == null) return;
+        GroupExpenseAdapter adapter = new GroupExpenseAdapter(new ArrayList<>(expenses), this);
         rvGroupContent.setAdapter(adapter);
+    }
 
-        expenseListener = db.collection("expenses")
-                .whereEqualTo("groupId", groupId)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null || currentTab != 0) return;
-                    expenses.clear();
-                    if (value != null) {
-                        for (QueryDocumentSnapshot doc : value) {
-                            expenses.add(doc.toObject(Expense.class));
-                        }
-                        expenses.sort((a, b) -> Long.compare(b.getTimestamp(), a.getTimestamp()));
-                    }
-                    adapter.notifyDataSetChanged();
-                });
+    private void renderBalances(List<User> members, Map<String, Double> balances) {
+        if (members == null || balances == null) return;
+        BalanceAdapter adapter = new BalanceAdapter(members, balances);
+        adapter.setActionListener(this);
+        rvGroupContent.setAdapter(adapter);
     }
 
     @Override
@@ -164,69 +156,12 @@ public class GroupDetailsActivity extends BaseActivity implements
                 .setTitle(getString(R.string.dialog_confirm_delete_title))
                 .setMessage(getString(R.string.dialog_confirm_delete_expense_msg))
                 .setPositiveButton(getString(R.string.dialog_action_agree), (dialog, which) -> {
-                    db.collection("expenses").document(expense.getId()).delete()
+                    FirebaseFirestore.getInstance().collection("expenses").document(expense.getId()).delete()
                             .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_delete_success), Toast.LENGTH_SHORT).show())
                             .addOnFailureListener(e -> Toast.makeText(this, getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
                 })
                 .setNegativeButton(getString(R.string.dialog_action_cancel), null)
                 .show();
-    }
-
-    private void showBalances() {
-        db.collection("groups").document(groupId).get().addOnSuccessListener(groupDoc -> {
-            if (currentTab != 1) return;
-            @SuppressWarnings("unchecked")
-            List<String> memberIds = (List<String>) groupDoc.get("memberIds");
-            if (memberIds == null) return;
-
-            List<User> members = new ArrayList<>();
-            AtomicInteger fetchCount = new AtomicInteger(0);
-            for (String uid : memberIds) {
-                db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
-                    if (currentTab != 1) return;
-                    User u = userDoc.toObject(User.class);
-                    if (u != null) { u.setUid(userDoc.getId()); members.add(u); }
-                    if (fetchCount.incrementAndGet() == memberIds.size()) {
-                        listenToExpensesForBalances(members);
-                    }
-                });
-            }
-        });
-    }
-
-    private void listenToExpensesForBalances(List<User> members) {
-        expenseListener = db.collection("expenses")
-                .whereEqualTo("groupId", groupId)
-                .addSnapshotListener((querySnapshot, error) -> {
-                    if (error != null || currentTab != 1) return;
-
-                    Map<String, Double> balances = new HashMap<>();
-                    for (User u : members) balances.put(u.getUid(), 0.0);
-
-                    if (querySnapshot != null) {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            Expense exp = doc.toObject(Expense.class);
-                            if (!Expense.STATUS_COMPLETED.equals(exp.getStatus())) continue;
-
-                            String payer = exp.getPayerId();
-                            if (balances.containsKey(payer)) {
-                                balances.put(payer, balances.get(payer) + exp.getAmount());
-                            }
-
-                            Map<String, Double> split = exp.getSplitDetails();
-                            if (split != null) {
-                                for (Map.Entry<String, Double> entry : split.entrySet()) {
-                                    if (balances.containsKey(entry.getKey())) {
-                                        balances.put(entry.getKey(), balances.get(entry.getKey()) - entry.getValue());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    BalanceAdapter adapter = new BalanceAdapter(members, balances);
-                    adapter.setActionListener(this);
-                    rvGroupContent.setAdapter(adapter);
-                });
     }
 
     private void openAddExpense() {
@@ -260,37 +195,16 @@ public class GroupDetailsActivity extends BaseActivity implements
         String title = getString(R.string.notif_title_debt_remind);
         String content = getString(R.string.notif_content_debt_remind_format, currentUserName, (long) Math.abs(balance), groupName);
 
-        String notifId = db.collection("notifications").document().getId();
-        AppNotification notif = new AppNotification(
-                notifId,
-                user.getUid(),
-                title,
-                content,
-                "REMIND",
-                groupId
-        );
-        db.collection("notifications").document(notifId).set(notif)
+        String notifId = FirebaseFirestore.getInstance().collection("notifications").document().getId();
+        AppNotification notif = new AppNotification(notifId, user.getUid(), title, content, "REMIND", groupId);
+        
+        FirebaseFirestore.getInstance().collection("notifications").document(notifId).set(notif)
                 .addOnSuccessListener(aVoid -> Toast.makeText(this, getString(R.string.toast_remind_sent_success, user.getName()), Toast.LENGTH_SHORT).show());
     }
 
     @Override
     public void onSettleTransaction(BalanceAdapter.Transaction transaction) {
-        Intent intent = new Intent(this, SettleUpActivity.class);
-        intent.putExtra("GROUP_ID", groupId);
-        intent.putExtra("TARGET_USER_ID", transaction.toId);
-        intent.putExtra("AMOUNT", transaction.amount);
-        startActivity(intent);
-    }
-
-    private void removeListeners() {
-        if (expenseListener != null) { expenseListener.remove(); expenseListener = null; }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        removeListeners();
-        if (groupListener != null) groupListener.remove();
+        onSettleUp(new User(transaction.toId, transaction.toName, ""), transaction.amount);
     }
 
     @Override
@@ -317,8 +231,9 @@ public class GroupDetailsActivity extends BaseActivity implements
     }
 
     private void shareInviteCode() {
-        if (joinCode == null) return;
-        String message = getString(R.string.share_invite_msg_format, groupName, joinCode);
+        if (viewModel.getGroup().getValue() == null) return;
+        String code = viewModel.getGroup().getValue().getJoinCode();
+        String message = getString(R.string.share_invite_msg_format, groupName, code);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TEXT, message);

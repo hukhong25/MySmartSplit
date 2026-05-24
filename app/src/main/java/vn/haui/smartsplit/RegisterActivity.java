@@ -2,34 +2,32 @@ package vn.haui.smartsplit;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.FirebaseFirestore;
+import androidx.lifecycle.ViewModelProvider;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.android.material.button.MaterialButton;
+
+import vn.haui.smartsplit.viewmodels.AuthViewModel;
 
 public class RegisterActivity extends BaseActivity {
 
     private EditText etDisplayName, etEmail, etPassword, etConfirmPassword;
     private MaterialButton btnRegister;
     private TextView tvLogin;
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
+    private ProgressBar progressBar;
+    private AuthViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
+        viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         etDisplayName = findViewById(R.id.etDisplayName);
         etEmail = findViewById(R.id.etEmail);
@@ -37,6 +35,9 @@ public class RegisterActivity extends BaseActivity {
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
+        progressBar = findViewById(R.id.progressBar);
+
+        observeViewModel();
 
         btnRegister.setOnClickListener(v -> {
             String name = etDisplayName.getText().toString().trim();
@@ -59,53 +60,30 @@ public class RegisterActivity extends BaseActivity {
                 return;
             }
 
-            registerUser(name, email, password);
+            viewModel.register(email, password, name);
         });
 
         tvLogin.setOnClickListener(v -> finish());
     }
 
-    private void registerUser(String name, String email, String password) {
-        btnRegister.setEnabled(false);
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            // Cập nhật Display Name công khai
-                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                    .setDisplayName(name)
-                                    .build();
+    private void observeViewModel() {
+        viewModel.getFirebaseUser().observe(this, user -> {
+            if (user != null) {
+                Toast.makeText(RegisterActivity.this, getString(R.string.toast_register_success), Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(RegisterActivity.this, HomeContainerActivity.class));
+                finishAffinity();
+            }
+        });
 
-                            user.updateProfile(profileUpdates);
+        viewModel.getError().observe(this, errMsg -> {
+            if (errMsg != null) {
+                Toast.makeText(RegisterActivity.this, getString(R.string.toast_register_failed_prefix, errMsg), Toast.LENGTH_SHORT).show();
+            }
+        });
 
-                            // Lưu thông tin user vào Firestore
-                            saveUserToFirestore(user.getUid(), name, email);
-                        }
-                    } else {
-                        btnRegister.setEnabled(true);
-                        Toast.makeText(RegisterActivity.this, getString(R.string.toast_register_failed_prefix, task.getException().getMessage()),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void saveUserToFirestore(String userId, String name, String email) {
-        Map<String, Object> userMap = new HashMap<>();
-        userMap.put("uid", userId);
-        userMap.put("name", name);
-        userMap.put("email", email);
-
-        db.collection("users").document(userId)
-                .set(userMap)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(RegisterActivity.this, getString(R.string.toast_register_success), Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(RegisterActivity.this, HomeContainerActivity.class));
-                    finishAffinity();
-                })
-                .addOnFailureListener(e -> {
-                    btnRegister.setEnabled(true);
-                    Toast.makeText(RegisterActivity.this, getString(R.string.toast_firestore_save_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
-                });
+        viewModel.getIsLoading().observe(this, loading -> {
+            if (progressBar != null) progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+            btnRegister.setEnabled(!loading);
+        });
     }
 }

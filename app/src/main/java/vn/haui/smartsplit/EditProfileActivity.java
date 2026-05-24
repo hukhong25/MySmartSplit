@@ -4,23 +4,19 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 
-import java.util.HashMap;
-import java.util.Map;
+import vn.haui.smartsplit.viewmodels.ProfileViewModel;
 
 public class EditProfileActivity extends BaseActivity {
 
@@ -28,9 +24,8 @@ public class EditProfileActivity extends BaseActivity {
     private ImageView ivAvatar;
     private TextView tvAvatarInitial;
     private MaterialButton btnSave, btnCancel;
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
-    private FirebaseStorage storage;
+    private ProgressBar progressBar;
+    private ProfileViewModel viewModel;
 
     private Uri selectedImageUri;
 
@@ -50,9 +45,7 @@ public class EditProfileActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -66,33 +59,51 @@ public class EditProfileActivity extends BaseActivity {
         etDisplayName = findViewById(R.id.etDisplayName);
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
+        progressBar = findViewById(R.id.progressBar);
         View frameAvatar = findViewById(R.id.frameAvatar);
 
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            etDisplayName.setText(user.getDisplayName());
-            db.collection("users").document(user.getUid()).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        String photoUrlStr = documentSnapshot.getString("photoUrl");
-                        if (photoUrlStr != null && !photoUrlStr.isEmpty()) {
-                            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, photoUrlStr, ivAvatar, 0);
-                            tvAvatarInitial.setVisibility(View.GONE);
-                        } else if (user.getPhotoUrl() != null) {
-                            vn.haui.smartsplit.utils.ImageUtils.loadImage(this, user.getPhotoUrl().toString(), ivAvatar, 0);
-                            tvAvatarInitial.setVisibility(View.GONE);
-                        } else {
-                            tvAvatarInitial.setVisibility(View.VISIBLE);
-                            String name = user.getDisplayName();
-                            if (name != null && !name.isEmpty()) {
-                                tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
-                            }
-                        }
-                    });
-        }
+        observeViewModel();
+        viewModel.loadUserProfile();
 
         frameAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
         btnSave.setOnClickListener(v -> saveProfile());
         btnCancel.setOnClickListener(v -> finish());
+    }
+
+    private void observeViewModel() {
+        viewModel.getUser().observe(this, user -> {
+            if (user != null) {
+                etDisplayName.setText(user.getName());
+                if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
+                    vn.haui.smartsplit.utils.ImageUtils.loadImage(this, user.getPhotoUrl(), ivAvatar, 0);
+                    tvAvatarInitial.setVisibility(View.GONE);
+                } else {
+                    tvAvatarInitial.setVisibility(View.VISIBLE);
+                    if (user.getName() != null && !user.getName().isEmpty()) {
+                        tvAvatarInitial.setText(String.valueOf(user.getName().charAt(0)).toUpperCase());
+                    }
+                }
+            }
+        });
+
+        viewModel.getUpdateSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, getString(R.string.toast_update_profile_success), Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            }
+        });
+
+        viewModel.getError().observe(this, err -> {
+            if (err != null) {
+                Toast.makeText(this, getString(R.string.toast_error_prefix, err), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getIsLoading().observe(this, loading -> {
+            if (progressBar != null) progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+            btnSave.setEnabled(!loading);
+        });
     }
 
     private void saveProfile() {
@@ -103,74 +114,15 @@ public class EditProfileActivity extends BaseActivity {
             return;
         }
 
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) return;
-
-        btnSave.setEnabled(false);
-
+        String base64Image = null;
         if (selectedImageUri != null) {
-            uploadImageAndSaveProfile(user, newName);
-        } else {
-            updateProfile(user, newName, user.getPhotoUrl());
-        }
-    }
-
-    private void uploadImageAndSaveProfile(FirebaseUser user, String newName) {
-        String base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), selectedImageUri, 300);
-        if (base64Image == null) {
-            btnSave.setEnabled(true);
-            Toast.makeText(this, getString(R.string.toast_image_processing_error), Toast.LENGTH_SHORT).show();
-            return;
+            base64Image = vn.haui.smartsplit.utils.ImageUtils.convertUriToBase64(getContentResolver(), selectedImageUri, 300);
+            if (base64Image == null) {
+                Toast.makeText(this, getString(R.string.toast_image_processing_error), Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
-        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setDisplayName(newName)
-                .build();
-
-        user.updateProfile(profileUpdates)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        updateFirestoreProfile(user.getUid(), newName, base64Image);
-                    } else {
-                        btnSave.setEnabled(true);
-                        Toast.makeText(this, getString(R.string.toast_profile_update_error_prefix, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void updateProfile(FirebaseUser user, String newName, Uri photoUri) {
-        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setDisplayName(newName)
-                .build();
-
-        user.updateProfile(profileUpdates)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        updateFirestoreProfile(user.getUid(), newName, null);
-                    } else {
-                        btnSave.setEnabled(true);
-                        Toast.makeText(this, getString(R.string.toast_profile_update_error_prefix, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void updateFirestoreProfile(String uid, String newName, String photoUrl) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("name", newName);
-        if (photoUrl != null) {
-            updates.put("photoUrl", photoUrl);
-        }
-
-        db.collection("users").document(uid)
-                .update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, getString(R.string.toast_update_profile_success), Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    btnSave.setEnabled(true);
-                    Toast.makeText(this, getString(R.string.toast_firestore_save_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show();
-                });
+        viewModel.updateProfile(newName, base64Image);
     }
 }

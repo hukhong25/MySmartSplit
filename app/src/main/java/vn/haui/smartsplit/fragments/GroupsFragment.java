@@ -16,14 +16,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +30,14 @@ import vn.haui.smartsplit.GroupDetailsActivity;
 import vn.haui.smartsplit.R;
 import vn.haui.smartsplit.adapters.GroupAdapter;
 import vn.haui.smartsplit.models.Group;
+import vn.haui.smartsplit.viewmodels.GroupsViewModel;
 
 public class GroupsFragment extends Fragment {
 
     private RecyclerView rvGroups;
     private GroupAdapter adapter;
     private List<Group> groupList;
-    private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
+    private GroupsViewModel viewModel;
     private EditText etSearch;
     private View layoutEmpty;
     private TextView tvGroupCount;
@@ -57,8 +54,7 @@ public class GroupsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+        viewModel = new ViewModelProvider(this).get(GroupsViewModel.class);
 
         rvGroups     = view.findViewById(R.id.rvGroups);
         etSearch     = view.findViewById(R.id.etSearchGroups);
@@ -68,6 +64,13 @@ public class GroupsFragment extends Fragment {
         MaterialButton btnCreate = view.findViewById(R.id.btnCreateGroup);
         MaterialButton btnJoin   = view.findViewById(R.id.btnJoinGroup);
 
+        setupUI(btnCreate, btnJoin);
+        observeViewModel();
+
+        viewModel.loadGroups();
+    }
+
+    private void setupUI(MaterialButton btnCreate, MaterialButton btnJoin) {
         rvGroups.setLayoutManager(new LinearLayoutManager(requireContext()));
         groupList = new ArrayList<>();
         adapter = new GroupAdapter(groupList, group -> {
@@ -78,7 +81,6 @@ public class GroupsFragment extends Fragment {
         });
         rvGroups.setAdapter(adapter);
 
-        // Search filter
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -91,35 +93,31 @@ public class GroupsFragment extends Fragment {
         if (btnCreate != null) btnCreate.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), CreateGroupActivity.class)));
         if (btnJoin != null) btnJoin.setOnClickListener(v -> showJoinGroupDialog());
-
-        loadGroups();
     }
 
-    private void loadGroups() {
-        if (mAuth.getCurrentUser() == null) return;
-        String uid = mAuth.getCurrentUser().getUid();
-        db.collection("groups")
-                .whereArrayContains("memberIds", uid)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null || !isAdded()) return;
-                    groupList.clear();
-                    if (value != null) {
-                        for (QueryDocumentSnapshot doc : value) {
-                            groupList.add(doc.toObject(Group.class));
-                        }
-                    }
-                    adapter.updateFullList(groupList);
-                    String query = etSearch != null ? etSearch.getText().toString() : "";
-                    adapter.getFilter().filter(query);
-                    updateGroupCount();
-                    updateEmptyState();
-                });
+    private void observeViewModel() {
+        viewModel.getGroups().observe(getViewLifecycleOwner(), groups -> {
+            groupList.clear();
+            groupList.addAll(groups);
+            adapter.updateFullList(groupList);
+            
+            String query = etSearch != null ? etSearch.getText().toString() : "";
+            adapter.getFilter().filter(query);
+            
+            updateGroupCount();
+            updateEmptyState();
+        });
+
+        viewModel.getError().observe(getViewLifecycleOwner(), errMsg -> {
+            if (errMsg != null) {
+                Toast.makeText(requireContext(), errMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateGroupCount() {
         if (tvGroupCount != null) {
-            int count = groupList.size();
-            tvGroupCount.setText(getString(R.string.group_count_format, count));
+            tvGroupCount.setText(getString(R.string.group_count_format, groupList.size()));
         }
     }
 
@@ -135,37 +133,15 @@ public class GroupsFragment extends Fragment {
     private void showJoinGroupDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle(getString(R.string.dialog_join_group_title));
-
         final EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
         input.setHint(getString(R.string.dialog_join_group_hint));
         builder.setView(input);
-
         builder.setPositiveButton(getString(R.string.dialog_action_join), (dialog, which) -> {
             String code = input.getText().toString().trim().toUpperCase();
-            if (!code.isEmpty()) joinGroupWithCode(code);
+            if (!code.isEmpty()) viewModel.joinGroup(code);
         });
         builder.setNegativeButton(getString(R.string.dialog_action_cancel), (dialog, which) -> dialog.cancel());
         builder.show();
-    }
-
-    private void joinGroupWithCode(String code) {
-        if (mAuth.getCurrentUser() == null) return;
-        String uid = mAuth.getCurrentUser().getUid();
-        db.collection("groups").whereEqualTo("joinCode", code).get()
-                .addOnSuccessListener(snapshots -> {
-                    if (!snapshots.isEmpty()) {
-                        String groupId = snapshots.getDocuments().get(0).getId();
-                        db.collection("groups").document(groupId)
-                                .update("memberIds", FieldValue.arrayUnion(uid))
-                                .addOnSuccessListener(v -> Toast.makeText(requireContext(),
-                                        getString(R.string.toast_join_group_success), Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(requireContext(),
-                                        getString(R.string.toast_error_prefix, e.getMessage()), Toast.LENGTH_SHORT).show());
-                    } else {
-                        Toast.makeText(requireContext(),
-                                getString(R.string.toast_join_code_invalid), Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 }

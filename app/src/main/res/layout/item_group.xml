@@ -69,20 +69,24 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Divider -->
+        <!-- Divider (Hidden by default to hide 0đ section) -->
         <View
+            android:id="@+id/viewDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/dividerColor"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="10dp"/>
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"/>
 
-        <!-- Row 2: Status label + Amount -->
+        <!-- Row 2: Status label + Amount (Hidden by default to hide 0đ section) -->
         <LinearLayout
+            android:id="@+id/layoutGroupBalance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="wrap_content"
